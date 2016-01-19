@@ -88,11 +88,14 @@ void InputEvents::mtimerarrve3()
                     break;
 
                 case 115:   //电池
-                    if(t.value == 0)
-                        emit sendbatterysta(true);
-                    else
-                        emit sendbatterysta(false);
-                    break;
+                    if(!battery)
+                    {
+                        if(t.value == 0)
+                            emit sendbatterysta(true);
+                        else
+                            emit sendbatterysta(false);
+                        break;
+                    }
 
                 case 116:
                    // printf("key116 %s\n",(t.value)?"Pressed":"Released");

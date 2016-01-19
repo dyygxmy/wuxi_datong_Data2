@@ -13,19 +13,33 @@ TaoTong::TaoTong(QObject *parent) :
     count_num6 = 0;
     count_num7 = 0;
     count_num8 = 0;
+    k_power = "";
+    k_before = "";
     m_thread.start();
     this->moveToThread(&m_thread);
 }
 
 void TaoTong::T_start()
 {
-      k1 = 0,k2 = 0,k3 = 0,k4 = 0;
+    k1 = 0,k2 = 0,k3 = 0,k4 = 0,k5 = 0,k6 = 0,k7 = 0,k8 = 0;
     connect(&m_timer,SIGNAL(timeout()),this,SLOT(taotong_timer()));
     m_timer.start(100);
 }
 
 void TaoTong::taotong_timer()
 {
+    if(battery)
+    {
+        QFile power("/var/power");
+        power.open(QIODevice::ReadOnly);
+        QTextStream in_power(&power);
+        in_power >> k_power;
+        if(k_power != k_before)
+        {
+            k_before = k_power;
+            emit sendbattery(k_power);
+        }
+    }
    // qDebug() << "MMMMMMMMM";
  if(SYSS == "ING" && TaoTongState)
  {

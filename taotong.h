@@ -18,6 +18,8 @@ public:
     
 signals:
     void taotong_num(int);
+    void sendbattery(QString);
+
 public slots:
     void T_start();
     void taotong_timer();
@@ -26,6 +28,8 @@ private:
     QTimer m_timer;
     int count_num1,count_num2,count_num3,count_num4,count_num5,count_num6,count_num7,count_num8;
     int k1,k2,k3,k4,k5,k6,k7,k8;
+    QString k_power;
+    QString k_before;
 };
 
 #endif // TAOTONG_H

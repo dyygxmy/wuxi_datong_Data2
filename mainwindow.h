@@ -50,9 +50,11 @@ public slots:
     void init();
     void wifishow(bool);
     void datashow(bool);
-    void batteryshow(bool);
+    void batteryshow1(QString);
+    void batteryshow2(bool);
     void time_warning(bool);
     void ReceGunNotReady();
+    void battery15();
 
 public :
 signals:
@@ -134,6 +136,7 @@ private:
     QTimer m_Timer;
     QTimer timerpdm;
     QTimer shutdown_timer;
+    QTimer timer_showdown;
     int numpdm;
     QPushButton *butt[50];
     QLabel *label1[50];

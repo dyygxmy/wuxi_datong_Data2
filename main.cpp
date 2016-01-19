@@ -31,6 +31,7 @@ bool TaoTongState = false;
 bool WIFI_STATE = false;
 bool SerialGunMode = true;
 bool DebugMode = false;
+bool battery = true;
 int Line_ID = 1;
 QString SYSS = "";
 QString SaveWhat="";
@@ -154,6 +155,14 @@ int main(int argc, char *argv[])
     QTextCodec::setCodecForLocale(QTextCodec::codecForLocale());
     QTextCodec::setCodecForCStrings(QTextCodec::codecForLocale());
 
+    QString k_power;
+    QFile power("/var/power");
+    power.open(QIODevice::ReadOnly);
+    QTextStream in_power(&power);
+    in_power >> k_power;
+    if(k_power=="11")
+        battery=false;
+
     MainWindow w ;
     w.show();
 
@@ -218,7 +227,8 @@ int main(int argc, char *argv[])
     QObject::connect(&Wifi_Connect,SIGNAL(data_connect(bool)),&w,SLOT(datashow(bool)),Qt::AutoConnection);
 
     QObject::connect(&inputevents,SIGNAL(sendconfigwarning(bool)),&w,SLOT(configwarning(bool)),Qt::AutoConnection);
-    QObject::connect(&inputevents,SIGNAL(sendbatterysta(bool)),&w,SLOT(batteryshow(bool)),Qt::AutoConnection);
+    QObject::connect(&inputevents,SIGNAL(sendbatterysta(bool)),&w,SLOT(batteryshow2(bool)),Qt::AutoConnection);
+    QObject::connect(&taotong,SIGNAL(sendbattery(QString)),&w,SLOT(batteryshow1(QString)),Qt::AutoConnection);
     QObject::connect(&taotong,SIGNAL(taotong_num(int)),&w,SLOT(taotong_main(int)),Qt::AutoConnection);
     QObject::connect(&fisupdate,SIGNAL(time_error(bool)),&w,SLOT(time_warning(bool)),Qt::AutoConnection);
     QObject::connect(w.newconfiginfo,SIGNAL(column_update(QString)),&fisupdate,SLOT(update_column(QString)),Qt::AutoConnection);

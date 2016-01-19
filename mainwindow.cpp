@@ -50,11 +50,15 @@ MainWindow::MainWindow(QWidget *parent) :
     // ui->label_9->hide();
     // ui->label_ss2->hide();
     ui->label_wifi->hide();
-    ui->label_battery->hide();
+    if(!battery)
+    {
+        ui->label_battery->hide();
+    }
     m_CurrentValue = m_MaxValue = m_UpdateInterval = 0;
     connect(&m_Timer, SIGNAL(timeout()), this, SLOT(UpdateSlot()));
     connect(&timerpdm, SIGNAL(timeout()), this, SLOT(PdmFlicker()));
     connect(&shutdown_timer,SIGNAL(timeout()),this,SLOT(clocked()));
+    connect(&timer_showdown,SIGNAL(timeout()),this,SLOT(battery15()));
     yellow_led(1);
     red_led(0);
     green_led(0);
@@ -1862,13 +1866,54 @@ void MainWindow::datashow(bool dataconnect)
         ui->label_ss2->setStyleSheet("border-image: url(:/LCD_CS351/LCD_CS351/35_all/69.bmp);");
 }
 
-void MainWindow::batteryshow(bool balive)
+void MainWindow::batteryshow1(QString power)
+{
+    if(power == "17")
+    {
+        if(timer_showdown.isActive())
+        {
+            qDebug()<<"timer_showdown stop";
+            timer_showdown.stop();
+        }
+        ui->label_battery->setStyleSheet("border-image: url(:/LCD_CS351/LCD_CS351/logo/battery2.png);background:transparent;");
+    }
+    else if(power == "16")
+    {
+        if(timer_showdown.isActive())
+        {
+            qDebug()<<"timer_showdown stop";
+            timer_showdown.stop();
+        }
+        ui->label_battery->setStyleSheet("border-image: url(:/LCD_CS351/LCD_CS351/logo/battery1.png);background:transparent;");
+    }
+    else if(power == "05")
+        ui->label_battery->setStyleSheet("border-image: url(:/LCD_CS351/LCD_CS351/logo/battery.png);background:transparent;");
+    else if(power == "04")
+        ui->label_battery->setStyleSheet("border-image: url(:/LCD_CS351/LCD_CS351/logo/battery_2.png);background:transparent;");
+    else if(power == "03")
+        ui->label_battery->setStyleSheet("border-image: url(:/LCD_CS351/LCD_CS351/logo/battery_red.png);background:transparent;");
+    else if(power == "02"||power == "01")
+    {
+        //15 分钟后关机
+        ui->label_battery->setStyleSheet("border-image: url(:/LCD_CS351/LCD_CS351/logo/battery_red.png);background:transparent;");
+        timer_showdown.start(900000);
+    }
+}
+
+void MainWindow::battery15()
+{
+    system("echo 0 > /sys/class/leds/control_lvds/brightness");  //关背光
+    qDebug("power down 1");
+    system("halt");
+}
+
+void MainWindow::batteryshow2(bool balive)
 {
     if(balive)
     {
         shutdown_timer.start(300000);
         ui->label_battery->show();
-        ui->label_battery->setStyleSheet("border-image: url(:/LCD_CS351/LCD_CS351/logo/battery.png);");
+        ui->label_battery->setStyleSheet("border-image: url(:/LCD_CS351/LCD_CS351/logo/battery.png);background:transparent;");
     }
     else
     {
@@ -1883,17 +1928,18 @@ void MainWindow::clocked()
     battry_num++;
     if(battry_num == 1)
     {
-        ui->label_battery->setStyleSheet("border-image: url(:/LCD_CS351/LCD_CS351/logo/battery_2.png);");
+        ui->label_battery->setStyleSheet("border-image: url(:/LCD_CS351/LCD_CS351/logo/battery_2.png);background:transparent;");
     }
     else if(battry_num == 2)
     {
-        ui->label_battery->setStyleSheet("border-image: url(:/LCD_CS351/LCD_CS351/logo/battery_red.png);");
+        ui->label_battery->setStyleSheet("border-image: url(:/LCD_CS351/LCD_CS351/logo/battery_red.png);background:transparent;");
     }
     else if(battry_num == 3)
     {
+        system("echo 0 > /sys/class/leds/control_lvds/brightness");
+        qDebug("power down 2");
         system("halt");
     }
-
 }
 
 void MainWindow::time_warning(bool time_warn)
@@ -1937,6 +1983,7 @@ void MainWindow::shutdown(int tmp)
     if(tmp == 1)
     {
         qDebug() << "halt here";
+        system("echo 0 > /sys/class/leds/control_lvds/brightness");
         system("halt");
     }
     else if(tmp == 2)

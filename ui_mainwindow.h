@@ -509,12 +509,12 @@ public:
         pushButton_reset->setFlat(true);
         label_battery = new QLabel(stackedWidget_6Page1);
         label_battery->setObjectName(QString::fromUtf8("label_battery"));
-        label_battery->setGeometry(QRect(1108, 574, 28, 14));
+        label_battery->setGeometry(QRect(1147, 574, 28, 14));
         label_battery->setStyleSheet(QString::fromUtf8("background:transparent;\n"
 "border-image: url(:/LCD_CS351/LCD_CS351/logo/battery.png);"));
         label_wifi = new QLabel(stackedWidget_6Page1);
         label_wifi->setObjectName(QString::fromUtf8("label_wifi"));
-        label_wifi->setGeometry(QRect(1150, 573, 23, 18));
+        label_wifi->setGeometry(QRect(1111, 573, 23, 18));
         label_wifi->setStyleSheet(QString::fromUtf8("background:transparent;\n"
 "border-image: url(:/LCD_CS351/LCD_CS351/logo/wifi.png);"));
         label_12 = new QLabel(stackedWidget_6Page1);

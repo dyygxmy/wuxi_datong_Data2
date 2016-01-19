@@ -22,7 +22,7 @@ static const uint qt_meta_data_MainWindow[] = {
        6,       // revision
        0,       // classname
        0,    0, // classinfo
-      46,   14, // methods
+      48,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -45,39 +45,41 @@ static const uint qt_meta_data_MainWindow[] = {
      285,   11,   11,   11, 0x0a,
      300,   11,   11,   11, 0x0a,
      315,   11,   11,   11, 0x0a,
-     333,   11,   11,   11, 0x0a,
-     352,   11,   11,   11, 0x0a,
-     370,   11,   11,   11, 0x0a,
-     391,   11,   11,   11, 0x0a,
-     408,   11,   11,   11, 0x0a,
-     421,   11,   11,   11, 0x0a,
-     448,   11,   11,   11, 0x0a,
-     474,   11,   11,   11, 0x0a,
-     500,   11,   11,   11, 0x0a,
-     526,   11,   11,   11, 0x0a,
-     552,   11,   11,   11, 0x0a,
-     578,   11,   11,   11, 0x0a,
-     604,   11,   11,   11, 0x0a,
-     630,   11,   11,   11, 0x0a,
-     656,   11,   11,   11, 0x0a,
-     682,   11,   11,   11, 0x0a,
-     713,   11,   11,   11, 0x0a,
-     740,   11,   11,   11, 0x0a,
-     767,   11,   11,   11, 0x0a,
-     794,   11,   11,   11, 0x0a,
-     820,   11,   11,   11, 0x0a,
-     831,   11,   11,   11, 0x0a,
-     844,   11,   11,   11, 0x0a,
-     857,   11,   11,   11, 0x0a,
-     884,   11,   11,   11, 0x0a,
-     914,   11,   11,   11, 0x0a,
-     938,   11,   11,   11, 0x0a,
-     958,   11,   11,   11, 0x0a,
-     976,   11,   11,   11, 0x0a,
-     990,   11,   11,   11, 0x0a,
-    1000,   11,   11,   11, 0x08,
-    1027,   11,   11,   11, 0x08,
-    1050,   11,   11,   11, 0x08,
+     337,   11,   11,   11, 0x0a,
+     356,   11,   11,   11, 0x0a,
+     375,   11,   11,   11, 0x0a,
+     393,   11,   11,   11, 0x0a,
+     405,   11,   11,   11, 0x0a,
+     426,   11,   11,   11, 0x0a,
+     443,   11,   11,   11, 0x0a,
+     456,   11,   11,   11, 0x0a,
+     483,   11,   11,   11, 0x0a,
+     509,   11,   11,   11, 0x0a,
+     535,   11,   11,   11, 0x0a,
+     561,   11,   11,   11, 0x0a,
+     587,   11,   11,   11, 0x0a,
+     613,   11,   11,   11, 0x0a,
+     639,   11,   11,   11, 0x0a,
+     665,   11,   11,   11, 0x0a,
+     691,   11,   11,   11, 0x0a,
+     717,   11,   11,   11, 0x0a,
+     748,   11,   11,   11, 0x0a,
+     775,   11,   11,   11, 0x0a,
+     802,   11,   11,   11, 0x0a,
+     829,   11,   11,   11, 0x0a,
+     855,   11,   11,   11, 0x0a,
+     866,   11,   11,   11, 0x0a,
+     879,   11,   11,   11, 0x0a,
+     892,   11,   11,   11, 0x0a,
+     919,   11,   11,   11, 0x0a,
+     949,   11,   11,   11, 0x0a,
+     973,   11,   11,   11, 0x0a,
+     993,   11,   11,   11, 0x0a,
+    1011,   11,   11,   11, 0x0a,
+    1025,   11,   11,   11, 0x0a,
+    1035,   11,   11,   11, 0x08,
+    1062,   11,   11,   11, 0x08,
+    1085,   11,   11,   11, 0x08,
 
        0        // eod
 };
@@ -91,8 +93,9 @@ static const char qt_meta_stringdata_MainWindow[] = {
     "fromsecondthreaddata(QString,QString,QString)\0"
     "getSerialNum(QString,bool,QString)\0"
     "connectMysql()\0init()\0wifishow(bool)\0"
-    "datashow(bool)\0batteryshow(bool)\0"
-    "time_warning(bool)\0ReceGunNotReady()\0"
+    "datashow(bool)\0batteryshow1(QString)\0"
+    "batteryshow2(bool)\0time_warning(bool)\0"
+    "ReceGunNotReady()\0battery15()\0"
     "TightenIsReady(bool)\0receiveOperate()\0"
     "timerDelay()\0on_pushButton_12_clicked()\0"
     "on_pushButton_1_clicked()\0"
@@ -137,40 +140,42 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 9: _t->init(); break;
         case 10: _t->wifishow((*reinterpret_cast< bool(*)>(_a[1]))); break;
         case 11: _t->datashow((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 12: _t->batteryshow((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 13: _t->time_warning((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 14: _t->ReceGunNotReady(); break;
-        case 15: _t->TightenIsReady((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 16: _t->receiveOperate(); break;
-        case 17: _t->timerDelay(); break;
-        case 18: _t->on_pushButton_12_clicked(); break;
-        case 19: _t->on_pushButton_1_clicked(); break;
-        case 20: _t->on_pushButton_2_clicked(); break;
-        case 21: _t->on_pushButton_3_clicked(); break;
-        case 22: _t->on_pushButton_4_clicked(); break;
-        case 23: _t->on_pushButton_5_clicked(); break;
-        case 24: _t->on_pushButton_6_clicked(); break;
-        case 25: _t->on_pushButton_7_clicked(); break;
-        case 26: _t->on_pushButton_8_clicked(); break;
-        case 27: _t->on_pushButton_9_clicked(); break;
-        case 28: _t->on_pushButton_delete_clicked(); break;
-        case 29: _t->on_pushButton_13_clicked(); break;
-        case 30: _t->on_pushButton_14_clicked(); break;
-        case 31: _t->on_pushButton_15_clicked(); break;
-        case 32: _t->on_pushButton_0_clicked(); break;
-        case 33: _t->ShowTime(); break;
-        case 34: _t->UpdateSlot(); break;
-        case 35: _t->PdmFlicker(); break;
-        case 36: _t->on_pushButton_18_clicked(); break;
-        case 37: _t->on_pushButton_reset_clicked(); break;
-        case 38: _t->receiveCloseInput((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 39: _t->configwarning((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 40: _t->taotong_main((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 41: _t->shutdown((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 42: _t->clocked(); break;
-        case 43: _t->on_pushButton_17_clicked(); break;
-        case 44: _t->signal_mysqlerror_do(); break;
-        case 45: _t->on_pushButton_shutdown_clicked(); break;
+        case 12: _t->batteryshow1((*reinterpret_cast< QString(*)>(_a[1]))); break;
+        case 13: _t->batteryshow2((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 14: _t->time_warning((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 15: _t->ReceGunNotReady(); break;
+        case 16: _t->battery15(); break;
+        case 17: _t->TightenIsReady((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 18: _t->receiveOperate(); break;
+        case 19: _t->timerDelay(); break;
+        case 20: _t->on_pushButton_12_clicked(); break;
+        case 21: _t->on_pushButton_1_clicked(); break;
+        case 22: _t->on_pushButton_2_clicked(); break;
+        case 23: _t->on_pushButton_3_clicked(); break;
+        case 24: _t->on_pushButton_4_clicked(); break;
+        case 25: _t->on_pushButton_5_clicked(); break;
+        case 26: _t->on_pushButton_6_clicked(); break;
+        case 27: _t->on_pushButton_7_clicked(); break;
+        case 28: _t->on_pushButton_8_clicked(); break;
+        case 29: _t->on_pushButton_9_clicked(); break;
+        case 30: _t->on_pushButton_delete_clicked(); break;
+        case 31: _t->on_pushButton_13_clicked(); break;
+        case 32: _t->on_pushButton_14_clicked(); break;
+        case 33: _t->on_pushButton_15_clicked(); break;
+        case 34: _t->on_pushButton_0_clicked(); break;
+        case 35: _t->ShowTime(); break;
+        case 36: _t->UpdateSlot(); break;
+        case 37: _t->PdmFlicker(); break;
+        case 38: _t->on_pushButton_18_clicked(); break;
+        case 39: _t->on_pushButton_reset_clicked(); break;
+        case 40: _t->receiveCloseInput((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 41: _t->configwarning((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 42: _t->taotong_main((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 43: _t->shutdown((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 44: _t->clocked(); break;
+        case 45: _t->on_pushButton_17_clicked(); break;
+        case 46: _t->signal_mysqlerror_do(); break;
+        case 47: _t->on_pushButton_shutdown_clicked(); break;
         default: ;
         }
     }
@@ -208,9 +213,9 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 46)
+        if (_id < 48)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 46;
+        _id -= 48;
     }
     return _id;
 }

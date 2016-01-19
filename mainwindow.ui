@@ -1032,7 +1032,7 @@ font: 14pt &quot;黑体&quot;;
        <widget class="QLabel" name="label_battery">
         <property name="geometry">
          <rect>
-          <x>1108</x>
+          <x>1147</x>
           <y>574</y>
           <width>28</width>
           <height>14</height>
@@ -1049,7 +1049,7 @@ border-image: url(:/LCD_CS351/LCD_CS351/logo/battery.png);</string>
        <widget class="QLabel" name="label_wifi">
         <property name="geometry">
          <rect>
-          <x>1150</x>
+          <x>1111</x>
           <y>573</y>
           <width>23</width>
           <height>18</height>

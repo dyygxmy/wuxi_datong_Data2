@@ -35,7 +35,7 @@ extern QString Operator;
 extern QString info[7];
 extern QString status[20][5];
 extern QString Version;
-
+extern bool battery;
 
 
 
