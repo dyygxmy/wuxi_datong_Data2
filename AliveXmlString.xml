@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root:ROOT 
+  xmlns:root="http://pdps.in.audi.vwg/legacy_schema/20.7.2/root" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xsi:schemaLocation="http://pdps.in.audi.vwg/legacy_schema/20.7.2/root root.xsd"><MSL_MSG><PNR>21</PNR><SDR><SER>1</SER></SDR></MSL_MSG></root:ROOT>
