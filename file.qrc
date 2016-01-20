@@ -96,5 +96,7 @@
         <file>LCD_CS351/LCD_CS351/DWIN_SET/home.bmp</file>
         <file>TemplateXmlString.xml</file>
         <file>LCD_CS351/LCD_CS351/35_all/logo.png</file>
+        <file>LCD_CS351/LCD_CS351/logo/battery1.png</file>
+        <file>LCD_CS351/LCD_CS351/logo/battery2.png</file>
     </qresource>
 </RCC>
