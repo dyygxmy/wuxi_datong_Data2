@@ -20,7 +20,7 @@ public slots:
     void comInit();
     void receivemss();
     void newConnect();
-    void slot_read_com();
+    void slot_read_com0();
 
 private:
     QThread m_thread;
@@ -34,7 +34,6 @@ private:
     int Ser_Fd;               //串口文件描述符
     bool isequeal;
     bool codeUsing;
-    
 };
 
 #endif // CHANGEOF351ANDRFID_H

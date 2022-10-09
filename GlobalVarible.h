@@ -1,7 +1,11 @@
 #ifndef GLOBALVARIBLE_H
 #define GLOBALVARIBLE_H
 
-#endif // GLOBALVARIBLE_H
+#include <QReadWriteLock>
+#include <QQueue>
+#include <QVector>
+#include <QMetaType>
+#include <unistd.h>
 extern bool isJS;
 extern bool isRFID; //是否是RFID
 extern bool isNormal;//是否正常
@@ -18,6 +22,7 @@ extern bool WIFI_STATE;
 extern bool SerialGunMode;
 extern bool DebugMode;
 extern int Line_ID;
+extern bool bound_enabled;
 extern QString SYSS;     //状态
 extern QString SaveWhat; //要保存什么
 extern QString VIN_PIN_SQL;//VIN 码
@@ -33,10 +38,34 @@ extern int enablenumberLeft; //剩余螺栓数量
 extern int TAOTONG;
 extern QString Operator;
 extern QString info[7];
-extern QString status[20][5];
+extern QString status[100][5];
 extern QString Version;
 extern bool battery;
+extern int  intDataMID;
+extern QString tablePreview;
+extern QString Localtable;
+extern int startNum ;
+extern QString g_direction ;
+//extern QString idCode; //采集曲线使用
+//extern int stationNo;
+extern QString curveNullBuf;
+extern QString GTestTightenData;//测试用装拧紧结果数据
 
+#define DTdebug()  qDebug( ) << __FILE__ << "|"  << __LINE__ << ":"
+#define FUNC( )    DTdebug() << "- Enter Funtion : " << QString( __PRETTY_FUNCTION__ )
+
+#define SQL_TABLE_TIGHTENDATA       "tighteningDatas"
+#define SQL_TABLE_FISDATA           "fisData"
+
+
+typedef struct insert_data
+{
+    QString data_model[19];
+}DATA_STRUCT;
+
+Q_DECLARE_METATYPE(DATA_STRUCT);
+
+#endif // GLOBALVARIBLE_H
 
 
 

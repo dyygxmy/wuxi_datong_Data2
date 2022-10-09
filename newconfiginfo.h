@@ -14,7 +14,10 @@
 #include "basicset.h"
 #include <QSqlQueryModel>
 #include <QSqlDatabase>
-//#include <QSqlQuery>
+#include <QTableWidget>
+#include <QHeaderView>
+#include <QList>
+#include <QSqlQuery>
 
 namespace Ui {
 class Newconfiginfo;
@@ -47,6 +50,12 @@ public:
     void historyclear();
     void savePDM();
     void clearCache();
+    void bound_show();
+    void bound_save();
+    void boundIsChange();
+    void show_bound();
+    void bound_init();
+    void bound_update();
 signals:
     void closeconfig();
     void sendGetTime();
@@ -61,7 +70,7 @@ public slots:
     void on_listWidget_currentRowChanged(int currentRow);
     void receivecancelpdm();
     void receivebaseinfocancel();
-    void receiveBaseinfo(QString,QString,QString);
+    void receiveBaseinfo(QString, QString, QString, QString);
     void receiveBaseinfoSave(bool);
     void pdmSelect();
     void pdminit();
@@ -323,6 +332,8 @@ public slots:
 
     void on_pushButton_38_clicked();
 
+    void receiveBound(bool);
+
 private slots:
     void on_pushButton_49_clicked();
 
@@ -339,6 +350,28 @@ private slots:
     void on_pushButton_51_clicked();
 
     void on_pushButton_104_clicked();
+
+    void on_pushButton_55_clicked();
+
+    void on_pushButton_tens_add_clicked();
+
+    void on_pushButton_tens_minus_clicked();
+
+    void on_pushButton_ones_add_clicked();
+
+    void on_pushButton_ones_minus_clicked();
+
+    void on_pushButton_88_clicked();
+
+    void on_pushButton_87_clicked();
+
+    void on_pushButton_bound_prev_clicked();
+
+    void on_pushButton_bound_next_clicked();
+
+    void on_pushButton_bound_clicked();
+
+    void on_pushButton_56_clicked();
 
 private:
     Ui::Newconfiginfo *ui;
@@ -423,6 +456,7 @@ private:
     int minute;
     int second;
 
+    QString controlType;
     QString cs351Ip;
     QString PortA;
     QString PortB;
@@ -442,11 +476,11 @@ private:
     QString thepages;
     QString affall;
     QString aff;
-    QSqlQueryModel *model;
+    QSqlQueryModel model;
     QString MysqlMin;
     QSqlDatabase db;
-    QSqlQuery *query;
-    QSqlQuery *query1;
+    QSqlQuery query;
+    QSqlQuery query1;
     QString VIN;
     QString ScrewID;
     QString condition;
@@ -454,6 +488,22 @@ private:
     int new_number;
     bool isoptionsaved;
     bool isoption;
+
+    QString bound[100][4];
+    int PronumNow;
+    bool isboundchange;
+    QString bound_temp[100][4];
+    int bound_pages;
+    int bound_current_page;
+    QList<int> list;
+    QList<int>::iterator iter;
+    int current;
+    QStringList header_vertical;
+    QTableWidgetItem *tableWidgetItem[10][5];
+    bool bound_enabled_temp;
+    void mysqlConnect();
+    bool mysqlIsOpen();
+    void mysqlClose();
 };
 
 #endif // NEWCONFIGINFO_H

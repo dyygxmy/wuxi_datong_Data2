@@ -66,6 +66,7 @@ void Communication::CMD()
     QString R_buff[len];//接收数据数组
     if(len == 0)
     {
+        qDebug()<<"data is null";
     }
     else
     {

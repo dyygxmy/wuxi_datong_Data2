@@ -377,22 +377,26 @@ void KeyBoard::setHanziText( const QString& text )
 void KeyBoard::updatePosition(QWidget *widget)
 {
     if (!widget)
-    {
-//        qDebug()<<"--------------------------------";
-        this->stackedWidget->setCurrentIndex(0);
-        setModeInput( KEBOARD_ENG );
-        widget = QApplication::focusWidget();
-    }
-    if (!widget || widget != QApplication::focusWidget())
-        return ;
-    QRect widgetRect = widget->rect();
-    QPoint panelPos = QPoint(widgetRect.left(), widgetRect.bottom() + 2);
-    panelPos = widget->mapToGlobal(panelPos);
-    if (panelPos.y()>506)
-         panelPos.setY(widgetRect.top() - 4 -524);
-    if (panelPos.x()>564)
-         panelPos.setX(564);
-    move(panelPos);
+      {
+  //        qDebug()<<"--------------------------------";
+          this->stackedWidget->setCurrentIndex(0);
+          setModeInput( KEBOARD_ENG );
+          widget = QApplication::focusWidget();
+      }
+      if (!widget || widget != QApplication::focusWidget())
+          return ;
+      QRect widgetRect = widget->rect();
+      QPoint panelPos = QPoint(widgetRect.left(), widgetRect.bottom() + 2);
+      QPoint widgetPos = QPoint(widgetRect.left(),widgetRect.top());
+      widgetPos = widget->mapToGlobal(widgetPos);
+      panelPos = widget->mapToGlobal(panelPos);
+      if (panelPos.y()>506)
+          panelPos.setY(widgetPos.y() - 2 -262);
+  //         panelPos.setY(widgetRect.top() - 4 -524);
+      if (panelPos.x()>564)
+           panelPos.setX(564);
+      move(panelPos);
+
 
 //    //std::cout << "------------------------------------------------" << std::endl;
 //    if (!widget)

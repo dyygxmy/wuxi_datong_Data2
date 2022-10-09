@@ -4,9 +4,15 @@
 
 QT       += core  gui   xml  sql  network
 TEMPLATE = app
-TARGET = 
-DEPENDPATH += .
-INCLUDEPATH += .
+TARGET = V21.0114.01
+DEPENDPATH += . proto json tightenProto
+INCLUDEPATH += . proto json tightenProto
+
+
+# DYTEST0 1 //显示光标
+# DYTEST1 0 //显示确认全部等
+
+DEFINES +=
 
 # Input
 #include(./source/websocket.pri)
@@ -28,17 +34,40 @@ HEADERS += \
     optiondialog.h \
     save.h \
     basicset.h \
-    fisupdate.h \
     communication.h \
     tightenthread.h \
     xmlcreate.h \
     inputevents.h \
     wificonnect.h \
-    reinsertserverdb.h \
     taotong.h \
     sqlthread.h \
     split.h \
-    serialcom.h
+    serialcom.h \
+    qextserial/qextserialport_global.h \
+    qextserial/qextserialport.h \
+    tighten_op_net.h \
+    logdelete.h \
+    proto/dt_http.h \
+    json/FlexLexer.h \
+    json/json_parser.hh \
+    json/json_scanner.h \
+    json/location.hh \
+    json/parser_p.h \
+    json/parser.h \
+    json/parserrunnable.h \
+    json/position.hh \
+    json/qjson_debug.h \
+    json/qjson_export.h \
+    json/qobjecthelper.h \
+    json/serializer.h \
+    json/serializerrunnable.h \
+    json/stack.hh \
+    proto/ftphandle.h \
+    proto/tightendataanalysis.h \
+    tighten_op_atlas_PFC.h \
+    proto/repaircurve.h \
+    tighten_op_wheel.h \
+    tighten_op_atlas_PM.h
 FORMS += \
          mainwindow.ui \
     newconfiginfo.ui \
@@ -68,17 +97,34 @@ SOURCES += \
     optiondialog.cpp \
     save.cpp \
     basicset.cpp \
-    fisupdate.cpp \
     communication.cpp \
     tightenthread.cpp \
     xmlcreate.cpp \
     inputevents.cpp \
     wificonnect.cpp \
-    reinsertserverdb.cpp \
     taotong.cpp \
     sqlthread.cpp \
     split.cpp \
-    serialcom.cpp
+    serialcom.cpp \
+    qextserial/qextserialport_unix.cpp \
+    qextserial/qextserialport.cpp \
+    tighten_op_net.cpp \
+    logdelete.cpp \
+    proto/dt_http.cpp \
+    json/json_parser.cc \
+    json/json_scanner.cc \
+    json/json_scanner.cpp \
+    json/parser.cpp \
+    json/parserrunnable.cpp \
+    json/qobjecthelper.cpp \
+    json/serializer.cpp \
+    json/serializerrunnable.cpp \
+    proto/ftphandle.cpp \
+    proto/tightendataanalysis.cpp \
+    tighten_op_atlas_PFC.cpp \
+    proto/repaircurve.cpp \
+    tighten_op_wheel.cpp \
+    tighten_op_atlas_PM.cpp
 RESOURCES += file.qrc \
     TestInput_Cursor/keypad.qrc
 

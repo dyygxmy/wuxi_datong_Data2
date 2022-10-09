@@ -31,8 +31,8 @@ void Changeof351AndRfid::newConnect()
         //ui->pushButton->setText("NOK");
     }
 
-
 }
+
 void Changeof351AndRfid::receivemss()
 {
     QByteArray a =  m_pTcpSocket->readAll();
@@ -99,11 +99,12 @@ void Changeof351AndRfid::receivemss()
     emit serialCom(temppin,isequeal,tempG9);
 
 }
-void Changeof351AndRfid::slot_read_com()
+
+void Changeof351AndRfid::slot_read_com0()
 {
+//    qDebug()<<"point[slot_read_com0_0]:";
     //从串口中读取数据
     int  nTmp = serial_Com.read_datas_tty(Ser_Fd, buff, 200, 20);
-  // qDebug() << "nTmp come in " << nTmp;
     if(nTmp > 0)
     {
         flag_l = true;
@@ -119,17 +120,29 @@ void Changeof351AndRfid::slot_read_com()
         flag_l = false;
     }
     bzero(&buff,sizeof(buff));
-    //  qDebug() << "serialNums" << serialNums << serialNums.size();
-    if (0 < nTmp && serialNums.size() < 22 && serialNums.size() > 13)
+    while(serialNums.size() != 0)
+    {
+        if(serialNums.left(1)!="L")
+        {
+            if(serialNums.left(1)!="9")
+                serialNums.replace(0,1,"");
+            else
+                break;
+        }
+        else
+            break;
+    }
+//    qDebug() << "serialNums:" << serialNums.size() << serialNums ;
+    if (0 < nTmp && serialNums.size() > 16)
     {
         serialNums = serialNums.mid(0,17);
-       qDebug() << "serialNumsnn" ;
+        qDebug() << "serialNumsnn" << codeUsing ;
         if(DebugMode)
         {
             emit sendSerial(serialNums.mid(0,17));
         }
        //  qDebug() << serialNums << serialNums.size() << serialNums.mid(16,1);
-         qDebug()<< CsIsConnect << ISmaintenance << SYSS;
+         qDebug()<< "serialNumsUse:" << CsIsConnect << ISmaintenance << SYSS;
         if(CsIsConnect && !ISmaintenance  && SYSS!="ING")
         {
             qDebug() << "fdfdfdfdfdfdf";
@@ -141,7 +154,8 @@ void Changeof351AndRfid::slot_read_com()
                 {
                     if(SerialGunMode)
                     {
-                        system("echo 1 > /sys/class/leds/control_uart2/brightness");
+//                        system("echo 1 > /sys/class/leds/control_uart2/brightness");
+//                        system("echo 1 > /sys/class/leds/control_uart1/brightness");
                     }
                     for(int i = 1;i<11;i++)
                     {
@@ -180,7 +194,7 @@ void Changeof351AndRfid::slot_read_com()
             {
                 if(!isequeal)
                 {
-                    codeUsing = true;
+//                    codeUsing = true;
                     sendMSG = serialNums;
                     emit serialCom(serialNums,isequeal," ");
                 }
@@ -192,17 +206,24 @@ void Changeof351AndRfid::slot_read_com()
                qDebug() << "sdfsdfsdf1";
             }
             qDebug() << serialNums << serialNums.mid(0,1) << codeUsing;
+#if 0
             if(serialNums.mid(0,1)!="L" && codeUsing)
             {
                 serialNums = sendMSG+"  "+serialNums.mid(11,2);
+                if(SerialGunMode)
+                {
+//                        system("echo 1 > /sys/class/leds/control_uart2/brightness");
+                        system("echo 1 > /sys/class/leds/control_uart1/brightness");
+                }
                 qDebug() << "sdfsdfsdf3" << serialNums << serialNums.size();
                 emit serialCom(serialNums,false," ");
                 codeUsing = false;
             }
+#endif
         }
-            serialNums.clear();
+        serialNums.clear();
     }
-
+//    qDebug()<<"point[slot_read_com0_1]:";
 }
 
 void Changeof351AndRfid::comInit()
@@ -223,7 +244,8 @@ void Changeof351AndRfid::comInit()
     }
     else
     {
-        Ser_Fd = open(TTYMX0, O_RDWR|O_NOCTTY|O_NDELAY);
+        Ser_Fd = open(TTYMX3, O_RDWR|O_NOCTTY|O_NDELAY);
+
         if (0 < Ser_Fd)
         {
             serial_Com.set_opt(Ser_Fd, BAUD_9600, DATA_BIT_8, PARITY_NONE, STOP_BIT_1);//设置串口参数
@@ -232,7 +254,7 @@ void Changeof351AndRfid::comInit()
         {
             qDebug() << "serial open fail";
         }
-        connect(&comsTimer,SIGNAL(timeout()),this,SLOT(slot_read_com()));
+        connect(&comsTimer,SIGNAL(timeout()),this,SLOT(slot_read_com0()));
         comsTimer.start(200);
     }
 }

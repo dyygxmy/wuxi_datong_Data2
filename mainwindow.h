@@ -13,8 +13,15 @@
 #include <QLabel>
 #include "save.h"
 #include <QTextCodec>
+//#include <tightenatlasoppmm.h>
+//#include <tightenatlasoppmm2.h>
 #include <QTimer>
 #include <QDebug>
+
+#include "parser.h"
+#include "serializer.h"
+//#include <QList>
+
 namespace Ui {
 class MainWindow;
 }
@@ -38,23 +45,22 @@ public:
     void yellow_led(int);
     void white_led(int);
     void nok_led(int);
-    void mysqlopen();
-    void mysqlclose();
     void sendWebValue(int states,QString namepdm);
 
 public slots:
 
     void fromsecondthreaddata(QString,QString,QString);
+//    void fromsecondthreaddata(QString,QString,QString,int ) ;
     void getSerialNum(QString,bool,QString);
-    void connectMysql();
     void init();
     void wifishow(bool);
     void datashow(bool);
     void batteryshow1(QString);
     void batteryshow2(bool);
     void time_warning(bool);
-    void ReceGunNotReady();
+//    void ReceGunNotReady();
     void battery15();
+    void showTyreNum(QString,QString) ;
 
 public :
 signals:
@@ -64,7 +70,10 @@ signals:
     void sendfromsecondthread(QString ,QString,QString);
     void sendConfigureAll(int isoption,int whicharis,int whichpro,int whichoptionis);
     void sendnexo(QString);
+    void signalSendLeft();
+    void signalSendRight() ;
 
+    void sendTestTightenData();
 
 
 public slots:
@@ -103,12 +112,28 @@ private slots:
     void signal_mysqlerror_do();
     void on_pushButton_shutdown_clicked();
 
+    void on_pushButton_tighten_clicked();
+
+    void on_btnLeft_clicked();
+
+    void on_btnRight_clicked();
+
+    void on_jump_clicked();
+
+    void on_btnIgnoreLeft_clicked();
+
+    void on_btnIgnoreRight_clicked();
+
+    void on_pushButton_16_clicked();
+
 private:
     Ui::MainWindow *ui;
+    QString searchScrewID(int lsNum);
     QString message;
     QString serialNums;
     QString tempPin;
     QString tempG9;
+    QString controlType;
 
     QByteArray Data_Xml_Txheart;
     int isFull;
@@ -138,24 +163,36 @@ private:
     QTimer shutdown_timer;
     QTimer timer_showdown;
     int numpdm;
-    QPushButton *butt[50];
-    QLabel *label1[50];
-    QLabel *label2[50];
+//    QPushButton *butt[50];
+//    QLabel *label1[50];
+//    QLabel *label2[50];
+    QList<QPushButton*>butt;
+    QList<QLabel*>label1;
+    QList<QLabel*>label2;
     int tempnumdpm; //螺丝个数
     bool pdmflicker; //闪烁状态
     int whichpdmnumnow; //当前第几个闪烁
     int Tacktime;
     int ScrewWhichExit;
     int battry_num;
+    int tyreNum;
+    int numType ;
+    QString statusType ;
+    int channelNum;//通道号 通过哪个控件进入到密码验证
+    void autoManualSwitch();
+
+    bool matchSuccess;//匹配成功标志位
+    void matchFuc(int);//根据配置信息匹配
+
+    void mysqlConnect();
+    bool mysqlIsOpen();
+    void mysqlclose();
 
 public:
     Newconfiginfo * newconfiginfo;
     QGraphicsOpacityEffect *e3;
     Save * save;
     bool ConfigOneOrAll;
-
-
-
 };
 
 #endif // MAINWINDOW_H

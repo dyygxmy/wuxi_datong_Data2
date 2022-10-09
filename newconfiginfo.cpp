@@ -16,6 +16,7 @@ Newconfiginfo::Newconfiginfo(QWidget *parent) :
     ui(new Ui::Newconfiginfo)
 {
     ui->setupUi(this);
+    mysqlConnect();
     this->setWindowFlags(Qt::FramelessWindowHint);//去掉标题栏
     // this->setCursor(Qt::BlankCursor); //去掉光标
     this->setGeometry(QRect(0, 0, 1366, 768));
@@ -40,10 +41,13 @@ Newconfiginfo::Newconfiginfo(QWidget *parent) :
     isxuanlook = true;
     isbaseinfochange = false;
     isadvancedchange = false;
+    ismasterslavechange = false;
     isoptionsaved = true; // option is saved or not
     isSavedpdm = true;//是否 pdm正常保存
     bxuanwhich = 0;
     isoption  = false;
+    PronumNow = 0;
+    isboundchange = false;
     buttonbox[0] = ui->pushButton_butt1;
     buttonbox[1] = ui->pushButton_butt2;
     buttonbox[2] = ui->pushButton_butt3;
@@ -59,6 +63,7 @@ Newconfiginfo::Newconfiginfo(QWidget *parent) :
     ui->label_version->setText(Version);
     QSettings *configIniRead = new QSettings("/config.ini", QSettings::IniFormat);
 
+    controlType = configIniRead->value("baseinfo/controlType").toString();
     cs351Ip = configIniRead->value("baseinfo/cs351Ip").toString();
     PortA = configIniRead->value("baseinfo/PortA").toString();
     PortB = configIniRead->value("baseinfo/PortB").toString();
@@ -80,6 +85,10 @@ Newconfiginfo::Newconfiginfo(QWidget *parent) :
     ui->lineEdit_slave_1->setValidator(validator);
     ui->lineEdit_slave_2->setValidator(validator);
     ui->lineEdit_slave_3->setValidator(validator);
+    ui->lineEdit_torque_max->setValidator(validator);
+    ui->lineEdit_torque_min->setValidator(validator);
+    ui->lineEdit_angle_max->setValidator(validator);
+    ui->lineEdit_angle_min->setValidator(validator);
     ui->lineEdit_G9->setEnabled(false);
     QRegExp rx1("[0-9]{1,9}");
     QValidator *validator1 = new QRegExpValidator(rx1, this );
@@ -97,7 +106,6 @@ Newconfiginfo::Newconfiginfo(QWidget *parent) :
     ui->lineEdit_xuanLsnum->setValidator(validator1);
 
     ui->lineEdit_psk->setEchoMode(QLineEdit::Password);
-
     ui->label_bx1name->setAttribute(Qt::WA_TransparentForMouseEvents);
     ui->label_bx1code->setAttribute(Qt::WA_TransparentForMouseEvents);
     ui->label_bx2name->setAttribute(Qt::WA_TransparentForMouseEvents);
@@ -130,9 +138,13 @@ Newconfiginfo::Newconfiginfo(QWidget *parent) :
     ui->pushButton_78->setAttribute(Qt::WA_TransparentForMouseEvents);
     ui->pushButton_79->setAttribute(Qt::WA_TransparentForMouseEvents);
 
+    ui->groupBox_11->setVisible(false); //关闭选配的可选，因为没做
+    ui->listWidget->setFrameShape(QListWidget::NoFrame);    //设置listwidget无边框
+
     ui->stackedWidget_6->setCurrentIndex(1);
 
     connect_localMySQL();
+    bound_init();
     // pdminit();
 }
 
@@ -265,9 +277,17 @@ void Newconfiginfo::initui()
 
     delete configIniRead;
 }
+
+
+//返回 ←
 void Newconfiginfo::on_pushButton_clicked()
 {
     //QSettings *config = new QSettings("/config.ini", QSettings::IniFormat);
+    ui->pushButton_butt1->setEnabled(true);
+    ui->pushButton_butt2->setEnabled(true);
+    ui->pushButton_butt3->setEnabled(true);
+    ui->pushButton_butt4->setEnabled(true);
+    ui->pushButton_butt5->setEnabled(true);
     if(SaveWhat == "pdm")
     {
         ui->label_69->show();
@@ -286,8 +306,6 @@ void Newconfiginfo::on_pushButton_clicked()
     {
         if(isJS)
         {
-            //QSqlDatabase::removeDatabase("QMYSQL");
-            //QSqlDatabase::removeDatabase("qt_sql_default_connection");
             historyclear();
             //workmode = true;
             //config->setValue("baseinfo/workmode","0");
@@ -314,8 +332,6 @@ void Newconfiginfo::on_pushButton_clicked()
             }
             else
             {
-                //QSqlDatabase::removeDatabase("QMYSQL");
-                //QSqlDatabase::removeDatabase("qt_sql_default_connection");
                 historyclear();
                 //workmode = true;
                 //config->setValue("baseinfo/workmode","0");
@@ -347,6 +363,7 @@ void Newconfiginfo::baseInfoIsChange()
     // 监听
     QSettings *configIniRead = new QSettings("/config.ini", QSettings::IniFormat);
     if (cs351Ip != configIniRead->value("baseinfo/cs351Ip").toString()||
+            controlType != configIniRead->value("baseinfo/controlType").toString()||
             PortA != configIniRead->value("baseinfo/PortA").toString()||
             PortB != configIniRead->value("baseinfo/PortB").toString()||
             RfidIp != configIniRead->value("baseinfo/RfidIp").toString()||
@@ -545,13 +562,14 @@ void Newconfiginfo::receivebaseinfocancel()
     ui->label_100->hide();
     delete basicset;
 }
-void Newconfiginfo::receiveBaseinfo(QString a , QString b, QString c)
+void Newconfiginfo::receiveBaseinfo(QString a , QString b, QString c, QString d)
 {
     if (SaveWhat == "cs351")
     {
         cs351Ip = a;
         PortA = b;
         PortB = c;
+        controlType = d;
         ui->label_97->setText(cs351Ip);
     }
     else if(SaveWhat=="RFID")
@@ -588,8 +606,8 @@ void Newconfiginfo::on_pushButton_59_clicked()
     ui->label_100->setGeometry(0,0,1366,768);
     SaveWhat = "cs351";
     basicset = new BasicSet(this);
-    basicset->setConfigValue351(cs351Ip,PortA,PortB);
-    connect(basicset,SIGNAL(sendBaseinfo(QString,QString,QString)),this,SLOT(receiveBaseinfo(QString,QString,QString)));
+    basicset->setConfigValue351(cs351Ip,PortA,PortB,controlType);
+    connect(basicset,SIGNAL(sendBaseinfo(QString,QString,QString,QString)),this,SLOT(receiveBaseinfo(QString,QString,QString,QString)));
     connect(basicset,SIGNAL(sendbaseinfocancel()),this,SLOT(receivebaseinfocancel()));
     basicset->show();
 
@@ -607,7 +625,7 @@ void Newconfiginfo::on_pushButton_60_clicked()
     SaveWhat = "RFID";
     basicset = new BasicSet(this);
     basicset->setSerialOrRfidMode(RfidIp,RfidPort);
-    connect(basicset,SIGNAL(sendBaseinfo(QString,QString,QString)),this,SLOT(receiveBaseinfo(QString,QString,QString)));
+    connect(basicset,SIGNAL(sendBaseinfo(QString,QString,QString,QString)),this,SLOT(receiveBaseinfo(QString,QString,QString,QString)));
     connect(basicset,SIGNAL(sendbaseinfocancel()),this,SLOT(receivebaseinfocancel()));
     basicset->show();
 
@@ -623,7 +641,7 @@ void Newconfiginfo::on_pushButton_61_clicked()
     SaveWhat = "server";
     basicset = new BasicSet(this);
     basicset->setServerValue(DataServerIp,CurveServerIp,AndonServerIp);
-    connect(basicset,SIGNAL(sendBaseinfo(QString,QString,QString)),this,SLOT(receiveBaseinfo(QString,QString,QString)));
+    connect(basicset,SIGNAL(sendBaseinfo(QString,QString,QString,QString)),this,SLOT(receiveBaseinfo(QString,QString,QString,QString)));
     connect(basicset,SIGNAL(sendbaseinfocancel()),this,SLOT(receivebaseinfocancel()));
     basicset->show();
 }
@@ -642,7 +660,7 @@ void Newconfiginfo::on_pushButton_65_clicked()
     basicset = new BasicSet(this);
     basicset->setSerialOrRfidMode(BarcodeGun,"");
     basicset->setchecking();
-    connect(basicset,SIGNAL(sendBaseinfo(QString,QString,QString)),this,SLOT(receiveBaseinfo(QString,QString,QString)));
+    connect(basicset,SIGNAL(sendBaseinfo(QString,QString,QString,QString)),this,SLOT(receiveBaseinfo(QString,QString,QString,QString)));
     connect(basicset,SIGNAL(sendbaseinfocancel()),this,SLOT(receivebaseinfocancel()));
     basicset->show();
 }
@@ -658,6 +676,7 @@ void Newconfiginfo::on_pushButton_63_clicked()
     ui->lineEdit_wirelessip->setText(configIniRead->value("baseinfo/WirelessIp").toString());
     ui->lineEdit_staid->setText(configIniRead->value("baseinfo/StationId").toString());
 
+    controlType = configIniRead->value("baseinfo/controlType").toString();
     cs351Ip = configIniRead->value("baseinfo/cs351Ip").toString();
     PortA = configIniRead->value("baseinfo/PortA").toString();
     PortB = configIniRead->value("baseinfo/PortB").toString();
@@ -688,6 +707,7 @@ void Newconfiginfo::receiveBaseinfoSave(bool statetmp)
         configIniRead->setValue("baseinfo/Operator",ui->lineEdit_Operator->text());
         Operator=ui->lineEdit_Operator->text();
         configIniRead->setValue("baseinfo/StationId",ui->lineEdit_staid->text());
+        configIniRead->setValue("baseinfo/controlType",controlType);
         configIniRead->setValue("baseinfo/cs351Ip",cs351Ip);
         configIniRead->setValue("baseinfo/PortA",PortA);
         configIniRead->setValue("baseinfo/PortB",PortB);
@@ -735,7 +755,7 @@ void Newconfiginfo::receiveBaseinfoSave(bool statetmp)
             if(ui->lineEdit_localip->text() != configIniRead->value("baseinfo/LocalIp").toString())
             {
                 configIniRead->setValue("baseinfo/LocalIp",ui->lineEdit_localip->text());
-                system(QString("ifconfig eth0 ").append(ui->lineEdit_localip->text()).toLatin1().data());
+                system(QString("ifconfig eth0 ").append(ui->lineEdit_localip->text()+" &").toLatin1().data());
                 if(str.contains("ifconfig eth0", Qt::CaseInsensitive)){
                     str.replace(QRegExp("ifconfig eth0 \\S*"),QString("ifconfig eth0 ")+ui->lineEdit_localip->text());
                 }
@@ -743,7 +763,7 @@ void Newconfiginfo::receiveBaseinfoSave(bool statetmp)
             if(ui->lineEdit_wirelessip->text() != configIniRead->value("baseinfo/WirelessIp").toString())
             {
                 configIniRead->setValue("baseinfo/WirelessIp",ui->lineEdit_wirelessip->text());
-                system((QString("ifconfig wlan0 ")+ui->lineEdit_wirelessip->text()+QString(" netmask ")+configIniRead->value("baseinfo/netmask").toString()).toLatin1().data());
+                system((QString("ifconfig wlan0 ")+ui->lineEdit_wirelessip->text()+QString(" netmask ")+configIniRead->value("baseinfo/netmask").toString()+" &").toLatin1().data());
                 if(str.contains("ifconfig wlan0", Qt::CaseInsensitive)){
                     str.replace(QRegExp("ifconfig wlan0 \\S*"),QString("ifconfig wlan0 ")+ui->lineEdit_wirelessip->text());
                 }
@@ -770,6 +790,7 @@ void Newconfiginfo::receiveBaseinfoSave(bool statetmp)
         ui->lineEdit_wirelessip->setText(configIniRead->value("baseinfo/WirelessIp").toString());
         ui->lineEdit_staid->setText(configIniRead->value("baseinfo/StationId").toString());
 
+        controlType = configIniRead->value("baseinfo/controlType").toString();
         cs351Ip = configIniRead->value("baseinfo/cs351Ip").toString();
         PortA = configIniRead->value("baseinfo/PortA").toString();
         PortB = configIniRead->value("baseinfo/PortB").toString();
@@ -1272,7 +1293,7 @@ void Newconfiginfo::buttclicked()
                     pro2[i] =  pro[i];
                     lsnumers2[i]  =  lsnumers[i] ;
                    // qDebug() << "taotong["+QString::number(i+1)+"]" << taotong[i];
-                    if(taotong[i]!="1"&& taotong[i]!="2"&& taotong[i]!="3"&& taotong[i]!="4" &&taotong[i]!="5"&& taotong[i]!="6"&& taotong[i]!="7"&& taotong[i]!="8")
+                    if(taotong[i]!="1"&& taotong[i]!="2"&& taotong[i]!="3"&& taotong[i]!="4")
                     {
                         configIniRead->setValue(QString("carinfo").append(QString::number(whichcar)).append("/Taotong").append(QString::number(i+1)),"0");
                         taotong[i] = "0"; 
@@ -1910,7 +1931,6 @@ void Newconfiginfo::on_pushButton_14_clicked()
         ui->label_100->setGraphicsEffect(e3);
         ui->label_100->show();
         ui->label_100->setGeometry(0,0,1366,768);
-
         save = new Save(this);
         connect(save,SIGNAL(sendDeSingle(bool)),this,SLOT(receiveDesignle(bool)));
         save->show();
@@ -1927,8 +1947,7 @@ void Newconfiginfo::on_pushButton_14_clicked()
             luo2[ui->label_119->text().toInt()-1] = ui->lineEdit_Lsnumber->text();
             pro2[ui->label_119->text().toInt()-1] = ui->lineEdit_pronum->text();
             lsnumers2[ui->label_119->text().toInt()-1] = ui->lineEdit_number->text();
-            if(ui->lineEdit_taotong->text()!="1"&& ui->lineEdit_taotong->text()!="2"&&ui->lineEdit_taotong->text()!="3"&&ui->lineEdit_taotong->text()!="4"
-                    && ui->lineEdit_taotong->text()!="5"&&ui->lineEdit_taotong->text()!="6"&&ui->lineEdit_taotong->text()!="7"&&ui->lineEdit_taotong->text()!="8")
+            if(ui->lineEdit_taotong->text()!="1"&& ui->lineEdit_taotong->text()!="2"&&ui->lineEdit_taotong->text()!="3"&&ui->lineEdit_taotong->text()!="4")
                 taotong2[ui->label_119->text().toInt()-1] = "0";
             else
                 taotong2[ui->label_119->text().toInt()-1] = ui->lineEdit_taotong->text();
@@ -1944,7 +1963,7 @@ void Newconfiginfo::on_pushButton_14_clicked()
                 pro[i] =  pro2[i];
                 lsnumers[i]  =  lsnumers2[i] ;
                 taotong[i] = taotong2[i];
-                if(taotong[i]!="1"&& taotong[i]!="2"&& taotong[i]!="3"&& taotong[i]!="4" &&taotong[i]!="5"&& taotong[i]!="6"&& taotong[i]!="7"&& taotong[i]!="8")
+                if(taotong[i]!="1"&& taotong[i]!="2"&& taotong[i]!="3"&& taotong[i]!="4")
                 {
                     //configIniRead->setValue(QString("carinfo").append(QString::number(whichcar)).append("/Taotong").append(QString::number(i+1)),"0");
                     taotong[i] = "0";
@@ -3688,7 +3707,7 @@ void Newconfiginfo::pdminit()
         QPixmap objPixmap = QPixmap::fromImage(image.scaled(QSize(241,179)));
         configButton->setIcon(QIcon(objPixmap));
         // configButton->setIcon(QIcon(QString("/PDM/").append(list.at(index))));
-        configButton->setText(string);
+        configButton->setText(tr(string.toLatin1().data()));
         configButton->setSizeHint(QSize(253,210));
 
         configButton->setTextAlignment(Qt::AlignHCenter);
@@ -4184,6 +4203,7 @@ void Newconfiginfo::on_pushButton_62_clicked()
         ui->label_101->hide();
         ui->label_98->hide();
         ui->label_99->hide();
+        ui->label_162->hide();
         QSettings *configIniRead = new QSettings("/config.ini", QSettings::IniFormat);
         ui->lineEdit_netmask->setText(configIniRead->value("baseinfo/netmask").toString());
         ui->lineEdit_gateway->setText(configIniRead->value("baseinfo/gateway").toString());
@@ -4309,13 +4329,13 @@ void Newconfiginfo::receiveSaveState(bool statetmp)
                 ui->minute->text().toInt() != minute||
                 ui->second->text().toInt() != second)
         {
-            QString str = "date -s \"" +ui->year->text()+"-"+ui->month->text() + "-" + ui->date->text()+ " "+ui->hour->text() + ":" + ui->minute->text() + ":" + ui->second->text()+"\"";
+            QString str = "date -s \"" +ui->year->text()+"-"+ui->month->text() + "-" + ui->date->text()+ " "+ui->hour->text() + ":" + ui->minute->text() + ":" + ui->second->text()+"\" &";
 
             //qDebug()<<"str"<<str;
             system(str.toLatin1().data());
 
             //将系统时间写入RTC
-            system("hwclock -w");
+            system("hwclock -w &");
             year=ui->year->text().toInt();
             month=ui->month->text().toInt();
             date=ui->date->text().toInt();
@@ -4328,7 +4348,7 @@ void Newconfiginfo::receiveSaveState(bool statetmp)
         if (ui->lineEdit_gateway->text() != configIniRead->value("baseinfo/netmask"))
         {
             configIniRead->setValue("baseinfo/netmask",ui->lineEdit_netmask->text());
-            system((QString("ifconfig wlan0 netmask ")+ui->lineEdit_netmask->text()).toLatin1().data());
+            system((QString("ifconfig wlan0 netmask ")+ui->lineEdit_netmask->text()+" &").toLatin1().data());
             QString fileName = "/etc/profile";
             QFile file(fileName);
             if(!file.open(QIODevice::ReadOnly| QIODevice::Text)){
@@ -4378,8 +4398,8 @@ void Newconfiginfo::receiveSaveState(bool statetmp)
             }
             file.write(str.toUtf8());
             file.close();
-            system("ifconfig ra0 down");
-            system("ifconfig ra0 up");
+            system("ifconfig ra0 down &");
+            system("ifconfig ra0 up &");
 
         }
     }else
@@ -4444,6 +4464,11 @@ void Newconfiginfo::receiveSaveState(bool statetmp)
         on_pushButton_86_clicked();
         isadvancedchange = false;
     }
+    else if(whichButtonClick == "bound_config")
+    {
+        on_pushButton_55_clicked();
+        isadvancedchange = false;
+    }
     else if(whichButtonClick == "saveadvanced")
     {
         isadvancedchange = false;
@@ -4502,7 +4527,7 @@ void Newconfiginfo::on_pushButton_13_clicked()
             ui->label_157->hide();
             ui->pushButton_54->hide();
             ui->label_SN->setText(configIniRead->value("baseinfo/SN").toString());
-            ui->label_version->setText(configIniRead->value("baseinfo/Version").toString());
+            //ui->label_version->setText(configIniRead->value("baseinfo/Version").toString());
         }
         else
         {
@@ -4544,10 +4569,20 @@ void Newconfiginfo::on_pushButton_2_clicked()
     {
         ui->stackedWidget_3->setCurrentIndex(0);
         ui->stackedWidget_5->setCurrentIndex(0);
-        // on_pushButton_15_clicked();
-        on_pushButton_14_clicked();
-    }
+        if(isJS)
+        {
+            ui->stackedWidget_2->setCurrentIndex(0);
+            ui->label_83->show();
+            ui->label_84->hide();
+            ui->label_85->hide();
+        }
+        else
+        {
+            //ui->stackedWidget_2->setCurrentIndex(2);
+            on_pushButton_14_clicked();
+        }
 
+    }
 }
 
 void Newconfiginfo::on_pushButton_3_clicked()
@@ -4557,6 +4592,8 @@ void Newconfiginfo::on_pushButton_3_clicked()
         advancedIsChange();
     else if(!ismasterslavechange)
         masterslaveIsChange();
+    else if(!isboundchange)
+        boundIsChange();
     else
     {
         ui->lineEdit_column->setText("");
@@ -4585,9 +4622,7 @@ void Newconfiginfo::on_pushButton_3_clicked()
 void Newconfiginfo::ShowTime()
 {
     QDateTime dateTime = QDateTime::currentDateTime();
-
     QTime current_time = QTime::currentTime();
-
     year=dateTime.date().year();
     month=dateTime.date().month();
     date=dateTime.date().day();
@@ -4735,6 +4770,8 @@ void Newconfiginfo::on_pushButton_58_clicked()
         whichButtonClick = "advanceset";
         if(!ismasterslavechange)
             masterslaveIsChange();
+        else if(!isboundchange)
+            boundIsChange();
         else
         {
             ui->lineEdit_column->setText("");
@@ -4745,6 +4782,7 @@ void Newconfiginfo::on_pushButton_58_clicked()
             ui->label_101->hide();
             ui->label_98->hide();
             ui->label_99->hide();
+            ui->label_162->hide();
             //            if( system("ping -c 3 10.0.0.1 -i 0.1")!= 0)
             //            {
             //                qDebug()<<"网络连接失败";
@@ -4769,6 +4807,8 @@ void Newconfiginfo::on_pushButton_66_clicked()
             advancedIsChange();
         else if(!ismasterslavechange)
             masterslaveIsChange();
+        else if(!isboundchange)
+            boundIsChange();
         else
         {
             ui->lineEdit_column->setText("");
@@ -4779,6 +4819,7 @@ void Newconfiginfo::on_pushButton_66_clicked()
             ui->label_88->show();
             ui->label_98->hide();
             ui->label_99->hide();
+            ui->label_162->hide();
             //        ui->stackedWidget_3->setCurrentIndex(3);
             //        ui->pushButton_96->setText(tr("测试界面"));
         }
@@ -4796,6 +4837,8 @@ void Newconfiginfo::on_pushButton_100_clicked()
             advancedIsChange();
         else if(!ismasterslavechange)
             masterslaveIsChange();
+        else if(!isboundchange)
+            boundIsChange();
         else
         {
             ui->lineEdit_column->setText("");
@@ -4805,6 +4848,7 @@ void Newconfiginfo::on_pushButton_100_clicked()
             ui->label_88->hide();
             ui->label_98->hide();
             ui->label_99->hide();
+            ui->label_162->hide();
             //        ui->stackedWidget_3->setCurrentIndex(3);
             //        ui->pushButton_96->setText(tr("更改密码"));
             isFull = 0;
@@ -5295,6 +5339,7 @@ void Newconfiginfo::advancedIsChange()
            ui->second->text().toInt() != second||
            line_ID != Line_ID)
     {
+        qDebug()<<"??????????????????????????????????????????????????????";
         e3 = new QGraphicsOpacityEffect(this);
         e3->setOpacity(0.5);
         ui->label_100->setGraphicsEffect(e3);
@@ -5335,6 +5380,11 @@ void Newconfiginfo::advancedIsChange()
             on_pushButton_86_clicked();
             isadvancedchange = false;
         }
+        else if (whichButtonClick == "bound_config")
+        {
+            on_pushButton_55_clicked();
+            isadvancedchange = false;
+        }
     }
     delete configIniRead;
 }
@@ -5367,10 +5417,10 @@ void Newconfiginfo::wifi_connect()
     file.write(str.toUtf8());
     file.close();
 
-    system((QString("wpa_cli set_network 0 ssid '\"")+wifiname+QString("\"'")).toLatin1().data());
-    system((QString("wpa_cli set_network 0 psk  '\"")+password+QString("\"'")).toLatin1().data());
-    system("wpa_cli disable_network 0");
-    system("wpa_cli enable_network 0");
+    system((QString("wpa_cli set_network 0 ssid '\"")+wifiname+QString("\"' &")).toLatin1().data());
+    system((QString("wpa_cli set_network 0 psk  '\"")+password+QString("\"' &")).toLatin1().data());
+    system("wpa_cli disable_network 0 &");
+    system("wpa_cli enable_network 0 &");
     //    system("udhcpc -i wlan0");
     //    if( system("ping -c 3 10.0.0.1")!= 0)
     //    {
@@ -5395,14 +5445,17 @@ void Newconfiginfo::wifi_connect()
 }
 
 
-//! [历史查询翻页]
+//历史查询翻页
 void Newconfiginfo::pagechange()
 {
     thepages =QString::number((thepage-1)*10);
-    aff = "select IDCode,ScrewID,Program,Torque,Angle,DATE_FORMAT(TighteningTime,'%Y-%m-%d %H:%i:%s'),TighteningStatus,UploadMark,Cycle from TighteningDatas WHERE "+condition+" order by RecordID DESC limit "+thepages +", 10";
-    //    aff = "select top(10) IDCode,ScrewID,Torque,Angle,DATE_FORMAT(TighteningTime,'%Y-%m-%d %H:%i:%s'),TighteningStatus,UploadMark,Cycle from TighteningDatas WHERE "+condition+" and RecordID not in (select top(("+ thepages +"-1)*10) RecordID from TighteningDatas WHERE "+condition+")";
+    aff = "select IDCode,ScrewID,Program,Torque,Angle,DATE_FORMAT(TighteningTime,'%Y-%m-%d %H:%i:%s'),TighteningStatus,UploadMark,Cycle from tighteningDatas WHERE "+condition+" order by RecordID DESC limit "+thepages +", 10";
+    //    aff = "select top(10) IDCode,ScrewID,Torque,Angle,DATE_FORMAT(TighteningTime,'%Y-%m-%d %H:%i:%s'),TighteningStatus,UploadMark,Cycle from tighteningDatas WHERE "+condition+" and RecordID not in (select top(("+ thepages +"-1)*10) RecordID from tighteningDatas WHERE "+condition+")";
     //qDebug()<< "aff="<< aff;
-    model->setQuery(aff);
+    if(mysqlIsOpen()){
+        model.setQuery(aff,db);
+        mysqlClose();
+    }
     int i;
     for(i=0;i<10;i++)
     {
@@ -5410,64 +5463,60 @@ void Newconfiginfo::pagechange()
     }
 }
 
+//搜索
 void Newconfiginfo::on_pushButton_search_clicked()
 {
-    if(!db.isOpen())
-    {
-        if(!db.open())
-            qDebug()<< "newconfig reopen" << db.lastError().text();
-        else
-            qDebug()<< "newconfig database reopen ok";
-    }
-    query = new QSqlQuery(db);
-    //    query->("SELECT * FROM TighteningDatas");
+    //    query.("SELECT * FROM tighteningDatas");
     VIN = ui->lineEdit_VIN_2->text();
     ScrewID = ui->lineEdit_ScrewID->text();
 
     if(VIN != "" && ScrewID != "")
-        condition = "IDCode COLLATE gb2312_bin LIKE \'%"+VIN+"%\' and ScrewID LIKE \'%"+ScrewID+"%\' and RecordID in (SELECT t.RecordID from (SELECT RecordID FROM TighteningDatas ORDER BY RecordID DESC LIMIT 1000)as t)";
+        condition = "IDCode COLLATE gb2312_bin LIKE \'%"+VIN+"%\' and ScrewID LIKE \'%"+ScrewID+"%\' and RecordID in (SELECT t.RecordID from (SELECT RecordID FROM tighteningDatas ORDER BY RecordID DESC LIMIT 1000)as t)";
     else if(VIN != "" && ScrewID == "")
-        condition = "IDCode COLLATE gb2312_bin LIKE \'%"+VIN+"%\' and RecordID in (SELECT t.RecordID from (SELECT RecordID FROM TighteningDatas ORDER BY RecordID DESC LIMIT 1000)as t)";
+        condition = "IDCode COLLATE gb2312_bin LIKE \'%"+VIN+"%\' and RecordID in (SELECT t.RecordID from (SELECT RecordID FROM tighteningDatas ORDER BY RecordID DESC LIMIT 1000)as t)";
     else if(VIN == "" && ScrewID != "")
-        condition = "ScrewID LIKE \'%"+ScrewID+"%\' and RecordID in (SELECT t.RecordID from (SELECT RecordID FROM TighteningDatas ORDER BY RecordID DESC LIMIT 1000)as t)";
+        condition = "ScrewID LIKE \'%"+ScrewID+"%\' and RecordID in (SELECT t.RecordID from (SELECT RecordID FROM tighteningDatas ORDER BY RecordID DESC LIMIT 1000)as t)";
     else if(VIN == "" && ScrewID == "")
-        condition = "RecordID in (SELECT t.RecordID from (SELECT RecordID FROM TighteningDatas ORDER BY RecordID DESC LIMIT 1000)as t)";
-    //    affall = "SELECT * FROM Data.TighteningDatas";
-    affall = "SELECT RecordId FROM TighteningDatas WHERE "+condition;
+        condition = "RecordID in (SELECT t.RecordID from (SELECT RecordID FROM tighteningDatas ORDER BY RecordID DESC LIMIT 1000)as t)";
+    //    affall = "SELECT * FROM Data.tighteningDatas";
+    affall = "SELECT RecordId FROM tighteningDatas WHERE "+condition;
     //qDebug()<< "affall="<< affall;
-    query->exec(affall);
+    if(mysqlIsOpen()){
+        query.exec(affall);
+        query.last();
+        int numRows = query.at() + 1;
+        //qDebug() << "row number: " << numRows;
+        ui->label_num->setText(QString::number(numRows));
+        if (numRows%10 != 0)
+        {
+            pages = numRows/10+1;
+        }
+        else
+        {
+            pages = numRows/10;
+        }
+        // qDebug() << "pages: " << pages;
+        ui->label_M->setText(QString::number(pages));
+        //thepage = 1;
+        if (numRows==0)
+        {
+            ui->label_N->setText("0");
+            thepage = 0;
+        }
+        else
+        {
+            thepage = 1;
+            ui->label_N->setText(QString::number(thepage));
+        }
+        //thepages =QString::number((thepage-1)*10);
+        thepages = "0";
+        aff = "select IDCode,ScrewID,Program,Torque,Angle,DATE_FORMAT(TighteningTime,'%Y-%m-%d %H:%i:%s'),TighteningStatus,UploadMark,Cycle from tighteningDatas WHERE "+condition+" order by RecordID DESC limit "+thepages +", 10";
+        //    aff = "select top(10) IDCode,ScrewID,Torque,Angle,TighteningTime,TighteningStatus,UploadMark,Cycle from tighteningDatas WHERE "+condition+" and RecordID not in (select top(("+ thepages +"-1)*10) RecordID from tighteningDatas WHERE "+condition+")";
+        //qDebug()<< "aff="<< aff;
+        model.setQuery(aff,db);
+        mysqlClose();
+    }
 
-    query->last();
-    int numRows = query->at() + 1;
-    //qDebug() << "row number: " << numRows;
-    ui->label_num->setText(QString::number(numRows));
-    if (numRows%10 != 0)
-    {
-        pages = numRows/10+1;
-    }
-    else
-    {
-        pages = numRows/10;
-    }
-    // qDebug() << "pages: " << pages;
-    ui->label_M->setText(QString::number(pages));
-    //thepage = 1;
-    if (numRows==0)
-    {
-        ui->label_N->setText("0");
-        thepage = 0;
-    }
-    else
-    {
-        thepage = 1;
-        ui->label_N->setText(QString::number(thepage));
-    }
-    //thepages =QString::number((thepage-1)*10);
-    thepages = "0";
-    aff = "select IDCode,ScrewID,Program,Torque,Angle,DATE_FORMAT(TighteningTime,'%Y-%m-%d %H:%i:%s'),TighteningStatus,UploadMark,Cycle from TighteningDatas WHERE "+condition+" order by RecordID DESC limit "+thepages +", 10";
-    //    aff = "select top(10) IDCode,ScrewID,Torque,Angle,TighteningTime,TighteningStatus,UploadMark,Cycle from TighteningDatas WHERE "+condition+" and RecordID not in (select top(("+ thepages +"-1)*10) RecordID from TighteningDatas WHERE "+condition+")";
-    //qDebug()<< "aff="<< aff;
-    model->setQuery(aff);
     // qDebug()<< db.lastError().text();
     int i;
     for(i=0;i<10;i++)
@@ -5514,51 +5563,68 @@ void Newconfiginfo::on_pushButton_next_clicked()
     ui->label_N->setText(QString::number(thepage));
     pagechange();
 }
-//! [历史查询翻页]
 
-void Newconfiginfo::connect_localMySQL()
+void Newconfiginfo::mysqlConnect()
 {
-    //打开本地数据库
-    db=QSqlDatabase::addDatabase("QMYSQL");
+    db=QSqlDatabase::addDatabase("QMYSQL","selectdatamysqlconnection");
     db.setHostName("localhost");
     db.setDatabaseName("Tighten");
     db.setUserName("root");
     db.setPassword("123456");
+    query = QSqlQuery(db);
+    query1 = QSqlQuery(db);
 
-    if(!db.open())
-    {
-        qDebug()<< "newconfig" << db.lastError().text();
-    }else
-    {
-        qDebug()<< "newconfig database ok";
+//    ui->tableView->setModel(&model);
+}
+
+bool Newconfiginfo::mysqlIsOpen()
+{
+
+    //打开本地数据库
+    if(!db.isOpen() || !db.contains("selectdatamysqlconnection")){
+        if(db.open()){
+            qDebug()<<"open selectdatamysqlconnection success";
+        }else{
+            qDebug()<<"open selectdatamysqlconnection faile:"<<db.lastError().text();
+        }
     }
 
+    model.setHeaderData(0, Qt::Horizontal, tr("VIN码"));
+    model.setHeaderData(1, Qt::Horizontal, tr("螺栓编号"));
+    model.setHeaderData(2, Qt::Horizontal, tr("程序号"));
+    model.setHeaderData(3, Qt::Horizontal, tr("扭矩"));
+    model.setHeaderData(4, Qt::Horizontal, tr("角度"));
+    model.setHeaderData(5, Qt::Horizontal, tr("拧紧时间"));
+    model.setHeaderData(6, Qt::Horizontal, tr("拧紧状态"));
+    model.setHeaderData(7, Qt::Horizontal, tr("上传标志"));
+    model.setHeaderData(8, Qt::Horizontal, tr("循环号"));
+//    ui->tableView->horizontalHeader()->setResizeMode(QHeaderView::Fixed);
+//    ui->tableView->setModel(&model);
 
-    model = new QSqlQueryModel(this);
-    model->setQuery("select IDCode,ScrewID,Program,Torque,Angle,TighteningTime,TighteningStatus,UploadMark,Cycle from TighteningDatas WHERE RecordId <0");
-    model->setHeaderData(0, Qt::Horizontal, tr("VIN码"));
-    model->setHeaderData(1, Qt::Horizontal, tr("螺栓编号"));
-    model->setHeaderData(2, Qt::Horizontal, tr("程序号"));
-    model->setHeaderData(3, Qt::Horizontal, tr("扭矩"));
-    model->setHeaderData(4, Qt::Horizontal, tr("角度"));
-    model->setHeaderData(5, Qt::Horizontal, tr("拧紧时间"));
-    model->setHeaderData(6, Qt::Horizontal, tr("拧紧状态"));
-    model->setHeaderData(7, Qt::Horizontal, tr("上传标志"));
-    model->setHeaderData(8, Qt::Horizontal, tr("车型"));
+    if(db.isOpen() && db.contains("selectdatamysqlconnection")){
+        return true;
+    }else{
+        return false;
+    }
+}
 
+void Newconfiginfo::mysqlClose()
+{
+    if(db.isOpen()){
+        db.close();
+    }
+}
 
-    ui->tableView->horizontalHeader()->setResizeMode(QHeaderView::Fixed);
-    //    ui->student_tableview->horizontalHeader()->setResizeMode(1, QHeaderView::Fixed);
-    //    ui->student_tableview->horizontalHeader()->setResizeMode(2, QHeaderView::Fixed);
-    //    ui->student_tableview->horizontalHeader()->setResizeMode(3, QHeaderView::Fixed);
-    //    ui->student_tableview->horizontalHeader()->setResizeMode(4, QHeaderView::Fixed);
-
-    ui->tableView->setModel(model);
-
+void Newconfiginfo::connect_localMySQL()
+{
+    //不查到任何数据，只为了开始显示表头
+    if(mysqlIsOpen()){
+        model.setQuery("select IDCode,ScrewID,Program,Torque,Angle,TighteningTime,TighteningStatus,UploadMark,Cycle from tighteningDatas WHERE RecordId <0",db);
+        mysqlClose();
+    }
+    ui->tableView->setModel(&model);
     ui->tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);//不可编辑
-
     ui->tableView->setShowGrid(false);//显示表格线
-
     ui->tableView->setColumnWidth(0,190);//第一列宽度
     ui->tableView->setColumnWidth(1,110);
     ui->tableView->setColumnWidth(2,70);
@@ -5568,8 +5634,6 @@ void Newconfiginfo::connect_localMySQL()
     ui->tableView->setColumnWidth(6,101);
     ui->tableView->setColumnWidth(7,100);
     ui->tableView->setColumnWidth(8,80);
-
-
     int i;
     for(i=0;i<10;i++)
     {
@@ -5578,12 +5642,10 @@ void Newconfiginfo::connect_localMySQL()
     ui->tableView->horizontalHeader()->setStyleSheet("QHeaderView::section {background-color: rgb(51, 153, 255);"
                                                      "color: rgb(248, 248, 255);border: 0px; font:14pt}");
     ui->tableView->horizontalHeader()->setFixedHeight(51);
-
     ui->tableView->verticalHeader()->setVisible(false);   //隐藏列表头
     ui->tableView->horizontalHeader()->setVisible(true); //隐藏行表头
     ui->label_M->setText("0");
     ui->label_N->setText("0");
-
     thepages = "";
 }
 
@@ -5657,12 +5719,13 @@ void Newconfiginfo::historyclear()
     ui->label_num->setText("________");
     ui->lineEdit_VIN_2->setText("");
     ui->lineEdit_ScrewID->setText("");
-    model->setQuery("select IDCode,ScrewID,Program,Torque,Angle,TighteningTime,TighteningStatus,UploadMark,Cycle from TighteningDatas WHERE RecordId <0");
+    model.setQuery("select IDCode,ScrewID,Program,Torque,Angle,TighteningTime,TighteningStatus,UploadMark,Cycle from tighteningDatas WHERE RecordId <0",db);
 }
 
 //Fis更新列
 void Newconfiginfo::on_pushButton_67_clicked()
 {
+    qDebug()<<"isboundchang"<<isboundchange;
     if(ui->stackedWidget_2-> currentIndex() != 10)
     {
         whichButtonClick = "fisupdatecolumn";
@@ -5670,6 +5733,8 @@ void Newconfiginfo::on_pushButton_67_clicked()
             advancedIsChange();
         else if(!ismasterslavechange)
             masterslaveIsChange();
+        else if(!isboundchange)
+            boundIsChange();
         else
         {
             ui->stackedWidget_2->setCurrentIndex(10);
@@ -5678,24 +5743,26 @@ void Newconfiginfo::on_pushButton_67_clicked()
             ui->label_88->hide();
             ui->label_98->show();
             ui->label_99->hide();
-
-            query = new QSqlQuery(db);
-            query->exec("select column_name from information_schema.columns where table_name='FisPreview'");
-            for(int i=0;i<6;i++)
-               query->next();
-            QString columns = "";
-            if(query->next())
-               columns = query->value(0).toString();
-            while(query->next())
-            {
-                columns = columns + ", "+query->value(0).toString();
-                //qDebug()<<query->value(0).toString();
+            ui->label_162->hide();
+            if(mysqlIsOpen()){
+                query.exec("select column_name from information_schema.columns where table_name='FisPreview'");
+                for(int i=0;i<6;i++)
+                   query.next();
+                QString columns = "";
+                if(query.next())
+                   columns = query.value(0).toString();
+                while(query.next())
+                {
+                    columns = columns + ", "+query.value(0).toString();
+                    //qDebug()<<query.value(0).toString();
+                }
+                //qDebug()<< "columns" << columns;
+                ui->textBrowser->setText(columns);
+                ui->lineEdit_column->clear();
+                ui->lineEdit_column_2->clear();
+                //ui->label_39->setText(columns);
+                mysqlClose();
             }
-            //qDebug()<< "columns" << columns;
-            ui->textBrowser->setText(columns);
-            ui->lineEdit_column->clear();
-            ui->lineEdit_column_2->clear();
-            //ui->label_39->setText(columns);
         }
     }
 }
@@ -5704,72 +5771,77 @@ void Newconfiginfo::on_pushButton_67_clicked()
 void Newconfiginfo::on_pushButton_4_clicked()
 {
     bool isColumnName=false;
-    query = new QSqlQuery(db);
-    query->exec("select column_name from information_schema.columns where table_name='FisPreview'");
-    while(query->next())
-    {
-        if(ui->lineEdit_column->text()==query->value(0).toString())
-            isColumnName=true;
-    }
-    if(!isColumnName)
-    {
-        if(!ui->lineEdit_column->text().isEmpty())
+    if(mysqlIsOpen()){
+        query.exec("select column_name from information_schema.columns where table_name='FisPreview'");
+        while(query.next())
         {
-            QString column =ui->lineEdit_column->text();
-            query->exec("alter table FisPreview add " + column + " char(3) null");
-            qDebug()<<"FisPreview add column "<<column;
-            query->exec("select column_name from information_schema.columns where table_name='FisPreview'");
-            for(int i=0;i<6;i++)
-               query->next();
-            QString columns = "";
-            if(query->next())
-               columns = query->value(0).toString();
-            while(query->next())
-            {
-               columns = columns + ", "+query->value(0).toString();
-                //qDebug()<<query->value(0).toString();
-            }
-            //qDebug()<< "columns" << columns;
-            //ui->label_39->setText(columns);
-            ui->textBrowser->setText(columns);
-            emit column_update(column);
-            ui->lineEdit_column->clear();
+            if(ui->lineEdit_column->text()==query.value(0).toString())
+                isColumnName=true;
         }
+        if(!isColumnName)
+        {
+            if(!ui->lineEdit_column->text().isEmpty())
+            {
+                QString column =ui->lineEdit_column->text();
+                query.exec("alter table FisPreview add " + column + " char(3) null");
+                qDebug()<<"FisPreview add column "<<column;
+                query.exec("select column_name from information_schema.columns where table_name='FisPreview'");
+                for(int i=0;i<6;i++)
+                   query.next();
+                QString columns = "";
+                if(query.next())
+                   columns = query.value(0).toString();
+                while(query.next())
+                {
+                   columns = columns + ", "+query.value(0).toString();
+                    //qDebug()<<query.value(0).toString();
+                }
+                //qDebug()<< "columns" << columns;
+                //ui->label_39->setText(columns);
+                ui->textBrowser->setText(columns);
+//                emit column_update(column);
+                ui->lineEdit_column->clear();
+            }
+        }
+        mysqlClose();
     }
+
 }
 
 //删除列
 void Newconfiginfo::on_pushButton_51_clicked()
 {
-    query = new QSqlQuery(db);
-    query1 = new QSqlQuery(db);
-    query1->exec("select column_name from information_schema.columns where table_name='FisPreview'");
-    for(int i=0;i<6;i++)
-        query1->next();
-    while(query1->next())
-    {
-        if(ui->lineEdit_column_2->text() == query1->value(0).toString())
+    if(mysqlIsOpen()){
+        query1.exec("select column_name from information_schema.columns where table_name='FisPreview'");
+        for(int i=0;i<6;i++)
+            query1.next();
+        while(query1.next())
         {
-            query->exec("alter table FisPreview drop " + ui->lineEdit_column_2->text());
-            qDebug()<<"FisPreview drop column "<<ui->lineEdit_column_2->text();
-            query->exec("select column_name from information_schema.columns where table_name='FisPreview'");
-            for(int i=0;i<6;i++)
-               query->next();
-            QString columns = "";
-            if(query->next())
-               columns = query->value(0).toString();
-            while(query->next())
+            if(ui->lineEdit_column_2->text() == query1.value(0).toString())
             {
-                columns = columns + ", "+query->value(0).toString();
-                //qDebug()<<query->value(0).toString();
+                query.exec("alter table FisPreview drop " + ui->lineEdit_column_2->text());
+                qDebug()<<"FisPreview drop column "<<ui->lineEdit_column_2->text();
+                query.exec("select column_name from information_schema.columns where table_name='FisPreview'");
+                for(int i=0;i<6;i++)
+                   query.next();
+                QString columns = "";
+                if(query.next())
+                   columns = query.value(0).toString();
+                while(query.next())
+                {
+                    columns = columns + ", "+query.value(0).toString();
+                    //qDebug()<<query.value(0).toString();
+                }
+                //qDebug()<< "columns" << columns;
+                //ui->label_39->setText(columns);
+                ui->textBrowser->setText(columns);
+                ui->lineEdit_column_2->clear();
             }
-            //qDebug()<< "columns" << columns;
-            //ui->label_39->setText(columns);
-            ui->textBrowser->setText(columns);
-            ui->lineEdit_column_2->clear();
+            //qDebug()<<query.value(0).toString();
         }
-        //qDebug()<<query->value(0).toString();
+        mysqlClose();
     }
+
 }
 
 void Newconfiginfo::on_pushButton_36_clicked()
@@ -5805,6 +5877,8 @@ void Newconfiginfo::on_pushButton_86_clicked()
         whichButtonClick = "master_slave";
         if(!isadvancedchange)
             advancedIsChange();
+        else if(!isboundchange)
+            boundIsChange();
         else
         {
             ismasterslavechange = false;
@@ -5814,6 +5888,7 @@ void Newconfiginfo::on_pushButton_86_clicked()
             ui->label_88->hide();
             ui->label_98->hide();
             ui->label_99->show();
+            ui->label_162->hide();
         }
     }
 }
@@ -5903,8 +5978,8 @@ void Newconfiginfo::receiveMasterSlaveState(bool statetmp)
                 ui->lineEdit_slave_3->clear();
                 configIniRead->setValue("baseinfo/slave3","");
             }
-            system("killall -9 client");
-            system("echo 0 > /sys/class/graphics/fb2/blank");
+            system("killall -9 client &");
+            system("echo 0 > /sys/class/graphics/fb2/blank &");
             system("/etc/data2/client -qws -display \"LinuxFb:/dev/fb2:mmWidth500:mmHeight300:0\" &");
         }
         else if(getModeSelect.checkedId()==2)
@@ -5997,7 +6072,12 @@ void Newconfiginfo::receiveMasterSlaveState(bool statetmp)
     }
     else if(whichButtonClick == "savemasterslave")
     {
-        ismasterslavechange = false;
+        //        ismasterslavechange = false;
+    }
+    else if(whichButtonClick == "bound_config")
+    {
+        on_pushButton_55_clicked();
+        //ismasterslavechange = false;
     }
 }
 
@@ -6005,8 +6085,6 @@ void Newconfiginfo::receiveDebug(QString vinbuf)
 {
     ui->lineEdit_staname_5->setText(vinbuf);
 }
-
-
 
 
 void Newconfiginfo::masterslaveIsChange()
@@ -6089,6 +6167,11 @@ void Newconfiginfo::masterslaveIsChange()
             on_pushButton_58_clicked();
             //ismasterslavechange = false;
         }
+        else if (whichButtonClick == "bound_config")
+        {
+            on_pushButton_55_clicked();
+            //ismasterslavechange = false;
+        }
     }
     delete configIniRead;
 }
@@ -6106,7 +6189,7 @@ void Newconfiginfo::receivetime(QString  datetime)
 }
 void Newconfiginfo::on_pushButton_38_clicked()
 {
-    emit sendGetTime();
+//    emit sendGetTime();
 }
 
 void Newconfiginfo::on_pushButton_49_clicked()
@@ -6122,12 +6205,11 @@ void Newconfiginfo::on_pushButton_49_clicked()
 //***********************套筒按钮加减**********************************
 void Newconfiginfo::on_pushButton_taotong_add_clicked()
 {
-    if(ui->lineEdit_taotong->text().toInt()!=1 && ui->lineEdit_taotong->text().toInt()!=2 && ui->lineEdit_taotong->text().toInt()!=3 && ui->lineEdit_taotong->text().toInt()!=4
-            && ui->lineEdit_taotong->text().toInt()!=5 && ui->lineEdit_taotong->text().toInt()!=6&& ui->lineEdit_taotong->text().toInt()!=7&& ui->lineEdit_taotong->text().toInt()!=8)
+    if(ui->lineEdit_taotong->text().toInt()!=1 && ui->lineEdit_taotong->text().toInt()!=2 && ui->lineEdit_taotong->text().toInt()!=3 && ui->lineEdit_taotong->text().toInt()!=4)
         ui->lineEdit_taotong->setText("0");
 
-    if((ui->lineEdit_taotong->text().toInt()+1) == 9)
-        ui->lineEdit_taotong->setText("8");
+    if((ui->lineEdit_taotong->text().toInt()+1) == 5)
+        ui->lineEdit_taotong->setText("4");
     else
         ui->lineEdit_taotong->setText(QString::number(ui->lineEdit_taotong->text().toInt()+1));
 
@@ -6135,8 +6217,7 @@ void Newconfiginfo::on_pushButton_taotong_add_clicked()
 
 void Newconfiginfo::on_pushButton_taotong_minus_clicked()
 {
-    if(ui->lineEdit_taotong->text().toInt()!=1 && ui->lineEdit_taotong->text().toInt()!=2 && ui->lineEdit_taotong->text().toInt()!=3 && ui->lineEdit_taotong->text().toInt()!=4
-            && ui->lineEdit_taotong->text().toInt()!=5 && ui->lineEdit_taotong->text().toInt()!=6&& ui->lineEdit_taotong->text().toInt()!=7&& ui->lineEdit_taotong->text().toInt()!=8)
+    if(ui->lineEdit_taotong->text().toInt()!=1&&ui->lineEdit_taotong->text().toInt()!=2&&ui->lineEdit_taotong->text().toInt()!=3&&ui->lineEdit_taotong->text().toInt()!=4)
         ui->lineEdit_taotong->setText("1");
 
     if((ui->lineEdit_taotong->text().toInt()-1) <= 0)
@@ -6150,7 +6231,7 @@ void Newconfiginfo::on_pushButton_taotong_minus_clicked()
 
 void Newconfiginfo::on_pushButton_50_clicked()
 {
-    system("rm /etc/pointercal");
+    system("rm /etc/pointercal &");
     system("/usr/local/tslib-instal/bin/ts_calibrate &");
 }
 
@@ -6169,4 +6250,589 @@ void Newconfiginfo::on_Line_radioButton_2_clicked()
 void Newconfiginfo::on_pushButton_104_clicked()
 {
     ui->lineEdit_staname_5->clear();
+}
+
+void Newconfiginfo::on_pushButton_55_clicked()
+{
+    if(ui->stackedWidget_2->currentIndex() != 12)
+    {
+        whichButtonClick = "bound_config";
+        if(!isadvancedchange)
+            advancedIsChange();
+        else if(!ismasterslavechange)
+            masterslaveIsChange();
+        else
+        {
+            ui->stackedWidget_2->setCurrentIndex(12);
+            ui->label_87->hide();
+            ui->label_101->hide();
+            ui->label_88->hide();
+            ui->label_98->hide();
+            ui->label_99->hide();
+            ui->label_162->show();
+
+            isboundchange = false;
+            on_pushButton_88_clicked();
+        }
+    }
+}
+
+void Newconfiginfo::bound_show()
+{
+    ui->lineEdit_ProNumber->setText(QString::number(PronumNow));
+    ui->lineEdit_torque_max->setText(bound[PronumNow][0]);
+    ui->lineEdit_torque_min->setText(bound[PronumNow][1]);
+    ui->lineEdit_angle_max->setText(bound[PronumNow][2]);
+    ui->lineEdit_angle_min->setText(bound[PronumNow][3]);
+}
+
+void Newconfiginfo::bound_save()
+{
+    bound[PronumNow][0]=ui->lineEdit_torque_max->text();
+    bound[PronumNow][1]=ui->lineEdit_torque_min->text();
+    bound[PronumNow][2]=ui->lineEdit_angle_max->text();
+    bound[PronumNow][3]=ui->lineEdit_angle_min->text();
+}
+
+void Newconfiginfo::on_pushButton_tens_add_clicked()
+{
+    bool wrong=false;
+    if(ui->lineEdit_torque_max->text()!=""&& ui->lineEdit_torque_min->text()!=""&&
+            ui->lineEdit_torque_max->text().toDouble()<ui->lineEdit_torque_min->text().toDouble())
+    {
+        wrong = true;
+        ui->lineEdit_torque_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(255, 0, 0);");
+        ui->lineEdit_torque_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(255, 0, 0);");
+    }
+    else
+    {
+        ui->lineEdit_torque_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+        ui->lineEdit_torque_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+    }
+    if(ui->lineEdit_angle_max->text()!=""&& ui->lineEdit_angle_min->text()!=""&&
+            ui->lineEdit_angle_max->text().toDouble()<ui->lineEdit_angle_min->text().toDouble())
+    {
+        wrong = true;
+        ui->lineEdit_angle_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(255, 0, 0);");
+        ui->lineEdit_angle_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(255, 0, 0);");
+    }
+    else
+    {
+        ui->lineEdit_angle_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+        ui->lineEdit_angle_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+    }
+    if(!wrong)
+    {
+        bound_save();
+        if(PronumNow+10<100)
+        {
+            PronumNow=PronumNow+10;
+            bound_show();
+        }
+    }
+}
+
+void Newconfiginfo::on_pushButton_tens_minus_clicked()
+{
+    bool wrong=false;
+    if(ui->lineEdit_torque_max->text()!=""&& ui->lineEdit_torque_min->text()!=""&&
+            ui->lineEdit_torque_max->text().toDouble()<ui->lineEdit_torque_min->text().toDouble())
+    {
+        wrong = true;
+        ui->lineEdit_torque_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(255, 0, 0);");
+        ui->lineEdit_torque_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(255, 0, 0);");
+    }
+    else
+    {
+        ui->lineEdit_torque_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+        ui->lineEdit_torque_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+    }
+    if(ui->lineEdit_angle_max->text()!=""&& ui->lineEdit_angle_min->text()!=""&&
+            ui->lineEdit_angle_max->text().toDouble() < ui->lineEdit_angle_min->text().toDouble())
+    {
+        wrong = true;
+        ui->lineEdit_angle_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(255, 0, 0);");
+        ui->lineEdit_angle_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(255, 0, 0);");
+    }
+    else
+    {
+        ui->lineEdit_angle_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+        ui->lineEdit_angle_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+    }
+    if(!wrong)
+    {
+        bound_save();
+        if(PronumNow-10>=0)
+        {
+            PronumNow=PronumNow-10;
+            bound_show();
+        }
+    }
+}
+
+void Newconfiginfo::on_pushButton_ones_add_clicked()
+{
+    bool wrong=false;
+    if(ui->lineEdit_torque_max->text()!=""&& ui->lineEdit_torque_min->text()!=""&&
+            ui->lineEdit_torque_max->text().toDouble()<ui->lineEdit_torque_min->text().toDouble())
+    {
+        wrong = true;
+        ui->lineEdit_torque_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(255, 0, 0);");
+        ui->lineEdit_torque_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(255, 0, 0);");
+    }
+    else
+    {
+        ui->lineEdit_torque_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+        ui->lineEdit_torque_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+    }
+    if(ui->lineEdit_angle_max->text()!=""&& ui->lineEdit_angle_min->text()!=""&&
+            ui->lineEdit_angle_max->text().toDouble()<ui->lineEdit_angle_min->text().toDouble())
+    {
+        wrong = true;
+        ui->lineEdit_angle_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(255, 0, 0);");
+        ui->lineEdit_angle_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(255, 0, 0);");
+    }
+    else
+    {
+        ui->lineEdit_angle_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+        ui->lineEdit_angle_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+    }
+    if(!wrong)
+    {
+        bound_save();
+        if(PronumNow+1<100)
+        {
+            PronumNow=PronumNow+1;
+            bound_show();
+        }
+    }
+}
+
+void Newconfiginfo::on_pushButton_ones_minus_clicked()
+{
+    bool wrong=false;
+    if(ui->lineEdit_torque_max->text()!=""&& ui->lineEdit_torque_min->text()!=""&&
+            ui->lineEdit_torque_max->text().toDouble()<ui->lineEdit_torque_min->text().toDouble())
+    {
+        wrong = true;
+        ui->lineEdit_torque_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(255, 0, 0);");
+        ui->lineEdit_torque_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(255, 0, 0);");
+    }
+    else
+    {
+        ui->lineEdit_torque_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+        ui->lineEdit_torque_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+    }
+    if(ui->lineEdit_angle_max->text()!=""&& ui->lineEdit_angle_min->text()!=""&&
+            ui->lineEdit_angle_max->text().toDouble()<ui->lineEdit_angle_min->text().toDouble())
+    {
+        wrong = true;
+        ui->lineEdit_angle_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(255, 0, 0);");
+        ui->lineEdit_angle_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(255, 0, 0);");
+    }
+    else
+    {
+        ui->lineEdit_angle_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+        ui->lineEdit_angle_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+    }
+    if(!wrong)
+    {
+        bound_save();
+        if(PronumNow-1>=0)
+        {
+            PronumNow=PronumNow-1;
+            bound_show();
+        }
+    }
+}
+
+void Newconfiginfo::on_pushButton_88_clicked()
+{
+    QSettings *config_bound = new QSettings("/config_bound.ini", QSettings::IniFormat);
+    for(int i=0;i<100;i++)
+    {
+        bound[i][0]=config_bound->value("ProNumber"+QString::number(i)+"/Torque_max").toString();
+        bound[i][1]=config_bound->value("ProNumber"+QString::number(i)+"/Torque_min").toString();
+        bound[i][2]=config_bound->value("ProNumber"+QString::number(i)+"/Angle_max").toString();
+        bound[i][3]=config_bound->value("ProNumber"+QString::number(i)+"/Angle_min").toString();
+        for(int j=0;j<4;j++)
+            bound_temp[i][j]=bound[i][j];
+    }
+    delete config_bound;
+    bound_enabled_temp=bound_enabled;
+    if(bound_enabled)
+    {
+        ui->pushButton_bound->setStyleSheet("border-image: url(:/LCD_CS351/LCD_CS351/35_all/13.bmp);");
+    }
+    else
+    {
+        ui->pushButton_bound->setStyleSheet("border-image: url(:/LCD_CS351/LCD_CS351/35_all/14.bmp);");
+    }
+    PronumNow = 0;
+    bound_show();
+    bound_update();
+    ui->lineEdit_torque_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+    ui->lineEdit_torque_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+    ui->lineEdit_angle_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+    ui->lineEdit_angle_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+}
+
+void Newconfiginfo::on_pushButton_87_clicked()
+{
+    bound_save();
+    whichButtonClick = "bound_save";
+    e3 = new QGraphicsOpacityEffect(this);
+    e3->setOpacity(0.5);
+    ui->label_100->setGraphicsEffect(e3);
+    ui->label_100->show();
+    ui->label_100->setGeometry(0,0,1366,768);
+
+    SaveWhat = "config_bound";
+    save = new Save(this);
+    connect(save,SIGNAL(sendSaveBound(bool)),this,SLOT(receiveBound(bool)));
+    save->show();
+}
+
+void Newconfiginfo::receiveBound(bool isSave)
+{
+    bool wrong=false;
+    if(isSave)
+    {
+        if(ui->lineEdit_torque_max->text()!=""&& ui->lineEdit_torque_min->text()!=""&&
+                ui->lineEdit_torque_max->text().toDouble()<ui->lineEdit_torque_min->text().toDouble())
+        {
+            wrong = true;
+            ui->lineEdit_torque_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(255, 0, 0);");
+            ui->lineEdit_torque_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(255, 0, 0);");
+        }
+        else
+        {
+            ui->lineEdit_torque_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+            ui->lineEdit_torque_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+        }
+        if(ui->lineEdit_angle_max->text()!=""&& ui->lineEdit_angle_min->text()!=""&&
+                ui->lineEdit_angle_max->text().toDouble()<ui->lineEdit_angle_min->text().toDouble())
+        {
+            wrong = true;
+            ui->lineEdit_angle_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(255, 0, 0);");
+            ui->lineEdit_angle_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(255, 0, 0);");
+        }
+        else
+        {
+            ui->lineEdit_angle_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+            ui->lineEdit_angle_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+        }
+        if(!wrong)
+        {
+            QSettings *config_bound = new QSettings("/config_bound.ini", QSettings::IniFormat);
+            for(int i=0;i<100;i++)
+            {
+                config_bound->setValue("ProNumber"+QString::number(i)+"/Torque_max",bound[i][0]);
+                config_bound->setValue("ProNumber"+QString::number(i)+"/Torque_min",bound[i][1]);
+                config_bound->setValue("ProNumber"+QString::number(i)+"/Angle_max",bound[i][2]);
+                config_bound->setValue("ProNumber"+QString::number(i)+"/Angle_min",bound[i][3]);
+                for(int j=0;j<4;j++)
+                    bound_temp[i][j]=bound[i][j];
+            }
+            bound_enabled = bound_enabled_temp;
+            QSettings *config = new QSettings("/config.ini", QSettings::IniFormat);
+            //        qDebug()<<"bound_enabled"<<bound_enabled;
+            config->setValue("baseinfo/bound",bound_enabled?"1":"0");
+            delete config;
+            bound_update();
+            delete config_bound;
+            isboundchange = true;
+        }
+    }
+    else
+    {
+        ui->lineEdit_torque_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+        ui->lineEdit_torque_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+        ui->lineEdit_angle_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+        ui->lineEdit_angle_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+    }
+    ui->label_100->hide();
+    delete e3;
+    delete save;
+    if(!wrong)
+    {
+        if(whichButtonClick == "advancedback")
+        {
+            on_pushButton_3_clicked();
+        }
+        else if (whichButtonClick == "advanceset")
+        {
+            on_pushButton_58_clicked();
+        }
+        else if(whichButtonClick == "passwordchange")
+        {
+            on_pushButton_100_clicked();
+        }
+        else if(whichButtonClick == "testinterface")
+        {
+            on_pushButton_66_clicked();
+        }
+        else if(whichButtonClick == "fisupdatecolumn")
+        {
+            on_pushButton_67_clicked();
+        }
+        else if(whichButtonClick == "master_slave")
+        {
+            on_pushButton_86_clicked();
+        }
+        else if(whichButtonClick == "bound_save")
+        {
+            isboundchange = false;
+        }
+    }
+}
+
+void Newconfiginfo::boundIsChange()
+{
+    bound_save();
+    QSettings *config_bound = new QSettings("/config_bound.ini", QSettings::IniFormat);
+    bool change = false;
+    for(int i=0;i<100;i++)
+    {
+        if(bound[i][0]!=config_bound->value("ProNumber"+QString::number(i)+"/Torque_max").toString()||
+                bound[i][1]!=config_bound->value("ProNumber"+QString::number(i)+"/Torque_min").toString()||
+                bound[i][2]!=config_bound->value("ProNumber"+QString::number(i)+"/Angle_max").toString()||
+                bound[i][3]!=config_bound->value("ProNumber"+QString::number(i)+"/Angle_min").toString())
+            change = true;
+    }
+    delete config_bound;
+    if(bound_enabled_temp != bound_enabled)
+        change = true;
+    if (change)
+    {
+        e3 = new QGraphicsOpacityEffect(this);
+        e3->setOpacity(0.5);
+        ui->label_100->setGraphicsEffect(e3);
+        ui->label_100->show();
+        ui->label_100->setGeometry(0,0,1366,768);
+
+        SaveWhat = "config_bound";
+        save = new Save(this);
+        connect(save,SIGNAL(sendSaveBound(bool)),this,SLOT(receiveBound(bool)));
+        save->show();
+//        isboundchange = true;
+    }
+    else
+    {
+        isboundchange = true;
+        if (whichButtonClick == "advancedback")
+        {
+            on_pushButton_3_clicked();
+        }
+        else if (whichButtonClick == "advanceset")
+        {
+            on_pushButton_58_clicked();
+        }
+        else if (whichButtonClick == "passwordchange")
+        {
+            on_pushButton_100_clicked();
+        }
+        else if (whichButtonClick == "testinterface")
+        {
+            on_pushButton_66_clicked();
+        }
+        else if (whichButtonClick == "fisupdatecolumn")
+        {
+            on_pushButton_67_clicked();
+        }
+        else if (whichButtonClick == "advanceset")
+        {
+            on_pushButton_58_clicked();
+        }
+        else if (whichButtonClick == "master_slave")
+        {
+            on_pushButton_86_clicked();
+        }
+    }
+}
+
+void Newconfiginfo::on_pushButton_bound_prev_clicked()
+{
+    if(bound_pages!=0)
+    {
+        if(--bound_current_page != 0)
+            show_bound();
+        else
+            bound_current_page=1;
+    }
+}
+
+void Newconfiginfo::on_pushButton_bound_next_clicked()
+{
+    if(++bound_current_page != bound_pages+1)
+    {
+        show_bound();
+    }
+    else
+        bound_current_page = bound_pages;
+}
+
+void Newconfiginfo::show_bound()
+{
+    for(int i=0;i<10;i++)
+    {
+        for(int j=0;j<5;j++)
+        {
+            tableWidgetItem[i][j]->setText("");
+        }
+//        header_vertical[i]="";
+    }
+
+    if(bound_pages != 0)
+    {
+        current =0;
+        for(iter=list.begin()+10*(bound_current_page-1); iter!=list.end() && iter!=list.begin()+10*(bound_current_page); iter++)
+        {
+            tableWidgetItem[current][0]->setText("P"+QString::number(*iter));
+//            header_vertical[current]="P"+QString::number(*iter);
+            for(int j=1;j<5;j++)
+            {
+                tableWidgetItem[current][j]->setText(bound_temp[*iter][j-1]);
+            }
+            current++;
+        }
+    }
+//    ui->tableWidget->setVerticalHeaderLabels(header_vertical);
+}
+
+void Newconfiginfo::bound_init()
+{
+    isboundchange = true;
+    bound_enabled_temp=bound_enabled;
+    bound_pages=0;
+    bound_current_page=0;
+    current =0;
+    iter=0;
+    ui->tableWidget->setRowCount(10);
+    ui->tableWidget->setColumnCount(5);
+    ui->tableWidget->setSelectionMode(QAbstractItemView::NoSelection);
+    ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->tableWidget->setFocusPolicy(Qt::NoFocus);
+    ui->tableWidget->setShowGrid(true);//显示表格线
+
+    ui->tableWidget->setColumnWidth(0,69);
+    for(int i=1;i<5;i++)
+        ui->tableWidget->setColumnWidth(i,125);
+    for(int i=0;i<10;i++)
+        ui->tableWidget->setRowHeight(i,52);
+
+    ui->tableWidget->verticalHeader()->setVisible(false);
+
+    ui->tableWidget->horizontalHeader()->setStyleSheet("QHeaderView::section {background-color: rgb(51, 153, 255);"
+                                                     "color: rgb(248, 248, 255);border: 0px; font:14pt}");
+//    ui->tableWidget->verticalHeader()->setStyleSheet("QHeaderView::section {background-color: rgb(248, 248, 255);"
+//                                                     "color:black; border: 0px; font:14pt}");
+    ui->tableWidget->horizontalHeader()->setFixedHeight(51);
+//    ui->tableWidget->verticalHeader()->setFixedWidth(49);
+
+//    ui->tableWidget->verticalHeader()->setMovable(false);
+    ui->tableWidget->horizontalHeader()->setMovable(false);
+
+//    ui->tableWidget->verticalHeader()->setDefaultAlignment(Qt::AlignCenter);
+
+    ui->tableWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);//去掉水平滚动条
+    ui->tableWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);//去掉水平滚动条
+    ui->tableWidget->setAutoScroll(false);//去掉自动滚动
+
+    ui->tableWidget->horizontalHeader()->setResizeMode(QHeaderView::Fixed);
+//    ui->tableWidget->verticalHeader()->setResizeMode(QHeaderView::Fixed);
+
+//    table->setStyleSheet("QTableCornerButton::section{background-color:red;}");
+
+//    tableWidget->setTextAlignment.
+    // 创建表格项目，并插入到指定单元
+//    QTableWidgetItem *tableWidgetItem = new QTableWidgetItem("qt");
+//    tableWidget->setItem(1, 1, tableWidgetItem);
+    // 创建表格项目，并将它们作为标头
+//    QTableWidgetItem *headerV = new QTableWidgetItem("P1");
+//    tableWidget->setVerticalHeaderItem(0,headerV);
+//    QTableWidgetItem *headerH0 = new QTableWidgetItem(tr("扭矩上限"));
+//    QTableWidgetItem *headerH1 = new QTableWidgetItem(tr("扭矩下限"));
+//    QTableWidgetItem *headerH2 = new QTableWidgetItem(tr("角度上限"));
+//    QTableWidgetItem *headerH3 = new QTableWidgetItem(tr("角度上限"));
+//    tableWidget->setHorizontalHeaderItem(0,headerH0);
+//    tableWidget->setHorizontalHeaderItem(1,headerH1);
+//    tableWidget->setHorizontalHeaderItem(2,headerH2);
+//    tableWidget->setHorizontalHeaderItem(3,headerH3);
+
+    for(int i=0;i<10;++i)
+        for(int j=0;j<5;++j)
+        {
+//            ui->tableWidget->item(i,j)->setText("");
+//            ui->tableWidget->item(i,j)->setTextAlignment(Qt::AlignCenter);
+            tableWidgetItem[i][j] = new QTableWidgetItem("");
+            ui->tableWidget->setItem(i,j,tableWidgetItem[i][j]);
+            ui->tableWidget->item(i,j)->setTextAlignment(Qt::AlignCenter);
+        }
+
+    //列名
+    QStringList header;
+    header<<"P"<<tr("扭矩上限(Nm)")<<tr("扭矩下限(Nm)")<<tr("角度上限(Deg)")<<tr("角度下限(Deg)");
+    ui->tableWidget->setHorizontalHeaderLabels(header);
+
+//    header_vertical<<""<<""<<""<<""<<""<<""<<""<<""<<""<<"";
+//    ui->tableWidget->setVerticalHeaderLabels(header_vertical);
+}
+
+void Newconfiginfo::bound_update()
+{
+    list.clear();
+    for(int i=0;i<100;i++)
+    {
+        if(bound_temp[i][0]!=""||bound_temp[i][1]!=""||bound_temp[i][2]!=""||bound_temp[i][3]!="")
+        {
+            list<<i;
+        }
+    }
+
+    bound_pages = 0;
+    bound_current_page = 0;
+
+    if(list.size()%10==0 && list.size()!=0)
+    {
+        bound_pages=list.size()/10;
+        bound_current_page = 1;
+    }
+    else if(list.size()%10!=0 && list.size() != 0)
+    {
+        bound_pages=list.size()/10+1;
+        bound_current_page = 1;
+    }
+    ui->label_bound_current_page->setText(QString::number(bound_current_page));
+    ui->label_bound_pages->setText(QString::number(bound_pages));
+//    qDebug()<<bound_pages<<bound_current_page;
+    show_bound();
+}
+
+//启用扭矩角度上下限设置
+void Newconfiginfo::on_pushButton_bound_clicked()
+{
+//    qDebug()<<"bound_enabled_temp:"<<bound_enabled_temp;
+    if(bound_enabled_temp)
+    {
+        bound_enabled_temp=false;
+        ui->pushButton_bound->setStyleSheet("border-image: url(:/LCD_CS351/LCD_CS351/35_all/14.bmp);");
+    }
+    else
+    {
+        bound_enabled_temp=true;
+        ui->pushButton_bound->setStyleSheet("border-image: url(:/LCD_CS351/LCD_CS351/35_all/13.bmp);");
+    }
+}
+
+void Newconfiginfo::on_pushButton_56_clicked()
+{
+    ui->lineEdit_torque_max->setText("");
+    ui->lineEdit_torque_min->setText("");
+    ui->lineEdit_angle_max->setText("");
+    ui->lineEdit_angle_min->setText("");
+    ui->lineEdit_torque_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+    ui->lineEdit_torque_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+    ui->lineEdit_angle_max->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
+    ui->lineEdit_angle_min->setStyleSheet("font: 14pt \"黑体\";border-width:1px; border-style:solid;border-color:rgb(51, 153, 255);");
 }

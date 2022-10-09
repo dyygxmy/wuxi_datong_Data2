@@ -26,7 +26,7 @@
     <string notr="true">background-color: rgb(248, 248, 255);</string>
    </property>
    <property name="currentIndex">
-    <number>3</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="page">
     <widget class="QLabel" name="label">
@@ -50,7 +50,7 @@
       <rect>
        <x>220</x>
        <y>51</y>
-       <width>251</width>
+       <width>71</width>
        <height>41</height>
       </rect>
      </property>
@@ -58,7 +58,7 @@
       <string notr="true">font: 14pt &quot;黑体&quot;;</string>
      </property>
      <property name="text">
-      <string>BOSCH Rexroth CS351设置</string>
+      <string>设置</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_3">
@@ -164,6 +164,72 @@ border-color:rgb(51, 153, 255); </string>
      </property>
      <property name="alignment">
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_7">
+     <property name="geometry">
+      <rect>
+       <x>180</x>
+       <y>290</y>
+       <width>131</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: 14pt &quot;黑体&quot;;</string>
+     </property>
+     <property name="text">
+      <string>控制器类型：</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBox_controlType">
+     <property name="geometry">
+      <rect>
+       <x>308</x>
+       <y>290</y>
+       <width>111</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">
+QComboBox {
+font: 14pt &quot;Arial&quot;;
+border-width:1px; 
+border-style:solid; 
+border-color:rgb(51, 153, 255); 
+margin-top: 0ex;
+}
+QComboBox::drop-down {
+width:30px; 
+border-width:1px; 
+border-style:solid; 
+border-color:rgb(51, 153, 255); 
+}
+QComboBox::down-arrow {
+image: url(:/LCD_CS351/LCD_CS351/logo/arrow.png);
+}
+QComboBox QAbstractItemView{
+height:50px;
+border: 1px solid rgb(51, 153, 255); 
+selection-background-color: rgb(51, 153, 255); 
+}
+QScrollBar:vertical{
+width:30px;
+}</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_controlType">
+     <property name="geometry">
+      <rect>
+       <x>350</x>
+       <y>60</y>
+       <width>68</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
      </property>
     </widget>
    </widget>
@@ -484,7 +550,7 @@ border-color:rgb(51, 153, 255); </string>
        <x>200</x>
        <y>200</y>
        <width>241</width>
-       <height>31</height>
+       <height>38</height>
       </rect>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout">

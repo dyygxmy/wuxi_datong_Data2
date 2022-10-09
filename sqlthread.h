@@ -9,6 +9,7 @@
 #include <QDateTime>
 #include "GlobalVarible.h"
 #include <QThread>
+#include <QVariantMap>
 class SqlThread : public QObject
 {
     Q_OBJECT
@@ -16,18 +17,18 @@ public:
     explicit SqlThread(QObject *parent = 0);
 
 public slots:
-    void sqlinit();
-    void mysqlopen();
-    void sqlclose();
     void sqlinsert(QString *);
+    void sqlinsert(QVariant);
     void receiveConfigureAll(int,int,int,int);
     void configOne(QString,QString,QString);
 public:
     QThread m_thread;
-    QSqlDatabase db2;
-    //    QSqlDatabase db3;
-    //    QSqlQuery query1;
-    QSqlQuery query2;
+private:
+    QSqlDatabase db;
+    QSqlQuery query;
+    void mysqlConnect();
+    bool mysqlIsOpen();
+    void sqlclose();
 public :signals:
     void send_mysqlerror();
 

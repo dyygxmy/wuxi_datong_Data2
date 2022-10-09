@@ -1,7 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>AliveXmlString.xml</file>
-        <file>ResetXmlString.xml</file>
         <file>LCD_CS351/LCD_CS351/35_all/5.bmp</file>
         <file>LCD_CS351/LCD_CS351/35_all/6.bmp</file>
         <file>LCD_CS351/LCD_CS351/35_all/9.bmp</file>
@@ -78,7 +76,6 @@
         <file>LCD_CS351/LCD_CS351/logo/right.jpg</file>
         <file>LCD_CS351/LCD_CS351/logo/left.jpg</file>
         <file>LCD_CS351/LCD_CS351/35_all/y01.png</file>
-        <file>LCD_CS351/LCD_CS351/35_all/g01.png</file>
         <file>LCD_CS351/LCD_CS351/35_all/r01.png</file>
         <file>LCD_CS351/LCD_CS351/35_all/w01.png</file>
         <file>LCD_CS351/LCD_CS351/logo/arrow.png</file>
@@ -93,10 +90,10 @@
         <file>LCD_CS351/LCD_CS351/logo/battery_red.png</file>
         <file>LCD_CS351/LCD_CS351/logo/battery_red_2.png</file>
         <file>LCD_CS351/LCD_CS351/logo/on_0ff.png</file>
-        <file>LCD_CS351/LCD_CS351/DWIN_SET/home.bmp</file>
-        <file>TemplateXmlString.xml</file>
         <file>LCD_CS351/LCD_CS351/35_all/logo.png</file>
         <file>LCD_CS351/LCD_CS351/logo/battery1.png</file>
         <file>LCD_CS351/LCD_CS351/logo/battery2.png</file>
+        <file>LCD_CS351/LCD_CS351/DWIN_SET/home.bmp</file>
+        <file>LCD_CS351/LCD_CS351/35_all/g01.png</file>
     </qresource>
 </RCC>

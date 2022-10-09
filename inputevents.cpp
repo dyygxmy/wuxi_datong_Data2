@@ -42,7 +42,7 @@ void InputEvents::InputEventStart()
 
 void InputEvents::mtimerarrve3()
 {
-
+//    qDebug()<<"point[mtimerarrve3_0]:";
    //qDebug() << "JHGKJHGHHHHHHHHHHHHHHHHHG1 " << ISWARNING;
     if(!ISWARNING)
     {
@@ -66,20 +66,20 @@ void InputEvents::mtimerarrve3()
                         if(t.value == 1)
                         {
                             numcount++;
-                            if(numcount == 20)
+                            if(numcount == 20)//长拧处理，20个循环都拧着
                             {
-                              emit sendconfigwarning(false);
+                              emit sendconfigwarning(false);//跳过所有
                               numcount = 0;
                             }
 
                         }
-                        else if(t.value == 0)
+                        else if(t.value == 0)//拧一下处理
                         {
                             numcount = 0;
                             //qDebug() << "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu44";
                             if(SYSS == "ING")
                             {
-                               emit sendconfigwarning(true);
+                               emit sendconfigwarning(true);//跳过一个
                             }
 
                         }
@@ -131,5 +131,5 @@ void InputEvents::mtimerarrve3()
     }
 
 
-
+//    qDebug()<<"point[mtimerarrve3_1]:";
 }

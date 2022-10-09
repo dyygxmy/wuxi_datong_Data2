@@ -5,6 +5,10 @@
 #include <QThread>
 #include <QSettings>
 #include <QTimer>
+#include <QDebug>
+#include "GlobalVarible.h"
+#include <QTextStream>
+#include <QFile>
 class Wificonnect : public QObject
 {
     Q_OBJECT
@@ -23,13 +27,20 @@ public slots:
 private:
     QThread wificonnect_thread;
     QTimer timerwifi;
-    int countnum;
-    int number;
-    bool wifiIn;
-    bool wifiOut;
-    int countnum_data;
-    bool wifiIn_data;
-    bool wifiOut_data;
+    bool DataConnected;
+    bool ApConnected;
+    bool RfidConnected;
+    int gateway;
+    int dataserver;
+    int rfidserver;
+//    int countnum;
+//    int number;
+//    bool wifiIn;
+//    bool wifiOut;
+//    int countnum_data;
+//    bool wifiIn_data;
+//    bool wifiOut_data;
+
     
 };
 

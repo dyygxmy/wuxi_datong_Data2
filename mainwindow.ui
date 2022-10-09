@@ -385,9 +385,7 @@ background-color: rgb(51, 155, 255);
          </property>
          <property name="styleSheet">
           <string notr="true">background:transparent;
-border-image: url(:/LCD_CS351/LCD_CS351/35_all/logo.png);
-
-</string>
+border-image: url(:/LCD_CS351/LCD_CS351/35_all/logo.png);</string>
          </property>
          <property name="text">
           <string/>
@@ -487,8 +485,8 @@ font: 14pt &quot;黑体&quot;;
           <rect>
            <x>20</x>
            <y>224</y>
-           <width>161</width>
-           <height>71</height>
+           <width>162</width>
+           <height>75</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -527,7 +525,7 @@ color: rgb(248, 248, 255);</string>
 color: rgb(248, 248, 255);</string>
               </property>
               <property name="text">
-               <string>工    位：</string>
+               <string>站    点：</string>
               </property>
              </widget>
             </item>
@@ -552,7 +550,7 @@ color: rgb(248, 248, 255);</string>
            <x>20</x>
            <y>90</y>
            <width>161</width>
-           <height>101</height>
+           <height>115</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout">
@@ -591,7 +589,7 @@ color: rgb(248, 248, 255);</string>
 color: rgb(248, 248, 255);</string>
               </property>
               <property name="text">
-               <string>额    定：</string>
+               <string>总    数：</string>
               </property>
              </widget>
             </item>
@@ -819,23 +817,6 @@ color: rgb(248, 248, 255);</string>
           <string>拧紧模式：</string>
          </property>
         </widget>
-        <widget class="QLabel" name="label_tighten">
-         <property name="geometry">
-          <rect>
-           <x>109</x>
-           <y>335</y>
-           <width>51</width>
-           <height>19</height>
-          </rect>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">font: 12pt &quot;黑体&quot;;
-color: rgb(248, 248, 255);</string>
-         </property>
-         <property name="text">
-          <string>Cleco</string>
-         </property>
-        </widget>
         <widget class="QPushButton" name="pushButton_shutdown">
          <property name="enabled">
           <bool>true</bool>
@@ -865,6 +846,29 @@ font: 14pt &quot;黑体&quot;;
           <bool>true</bool>
          </property>
         </widget>
+        <widget class="QPushButton" name="pushButton_tighten">
+         <property name="geometry">
+          <rect>
+           <x>100</x>
+           <y>329</y>
+           <width>71</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font: 12pt &quot;黑体&quot;;
+color: rgb(248, 248, 255);</string>
+         </property>
+         <property name="text">
+          <string>auto</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
         <zorder>label_8</zorder>
         <zorder>label_ss1</zorder>
         <zorder>label_9</zorder>
@@ -883,8 +887,8 @@ font: 14pt &quot;黑体&quot;;
         <zorder>layoutWidget_3</zorder>
         <zorder>layoutWidget_4</zorder>
         <zorder>label_16</zorder>
-        <zorder>label_tighten</zorder>
         <zorder>pushButton_shutdown</zorder>
+        <zorder>pushButton_tighten</zorder>
        </widget>
        <widget class="QLabel" name="label_18">
         <property name="geometry">
@@ -947,7 +951,9 @@ font: 14pt &quot;黑体&quot;;
          </rect>
         </property>
         <property name="styleSheet">
-         <string notr="true">border-image: url(:/LCD_CS351/LCD_CS351/DWIN_SET/home.bmp);</string>
+         <string notr="true">QLabel#label_pdmarea{
+	border-image: url(:/LCD_CS351/LCD_CS351/DWIN_SET/home.bmp);
+}</string>
         </property>
         <property name="text">
          <string/>
@@ -1078,6 +1084,164 @@ color: rgb(51, 153, 255);</string>
         </property>
         <property name="text">
          <string/>
+        </property>
+       </widget>
+       <widget class="QLabel" name="labelTyre1">
+        <property name="geometry">
+         <rect>
+          <x>220</x>
+          <y>30</y>
+          <width>71</width>
+          <height>35</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font: 12pt &quot;黑体&quot;;
+color: rgb(248, 248, 255);
+background-color:rgb(51, 153, 255);</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QLabel" name="labelTyre4">
+        <property name="geometry">
+         <rect>
+          <x>1270</x>
+          <y>520</y>
+          <width>71</width>
+          <height>35</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font: 12pt &quot;黑体&quot;;
+color: rgb(248, 248, 255);
+background-color:rgb(51, 153, 255);</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QLabel" name="labelTyre3">
+        <property name="geometry">
+         <rect>
+          <x>220</x>
+          <y>520</y>
+          <width>71</width>
+          <height>35</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font: 12pt &quot;黑体&quot;;
+color: rgb(248, 248, 255);
+background-color:rgb(51, 153, 255);</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QLabel" name="labelTyre2">
+        <property name="geometry">
+         <rect>
+          <x>1270</x>
+          <y>30</y>
+          <width>71</width>
+          <height>35</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font: 12pt &quot;黑体&quot;;
+color: rgb(248, 248, 255);
+background-color:rgb(51, 153, 255);</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnLeft">
+        <property name="geometry">
+         <rect>
+          <x>450</x>
+          <y>50</y>
+          <width>80</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
+        <property name="text">
+         <string>L</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnRight">
+        <property name="geometry">
+         <rect>
+          <x>580</x>
+          <y>50</y>
+          <width>80</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>R</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="jump">
+        <property name="geometry">
+         <rect>
+          <x>700</x>
+          <y>50</y>
+          <width>80</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>J</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnIgnoreLeft">
+        <property name="geometry">
+         <rect>
+          <x>370</x>
+          <y>230</y>
+          <width>255</width>
+          <height>150</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font: 17pt ;
+background-color: rgb(255, 0, 0);
+color: rgb(248, 248, 255);
+border-width:0px;  
+border-style:solid;
+border-color: rgb(51, 153, 255);  
+</string>
+        </property>
+        <property name="text">
+         <string>    跳过左侧螺栓</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnIgnoreRight">
+        <property name="geometry">
+         <rect>
+          <x>860</x>
+          <y>230</y>
+          <width>255</width>
+          <height>150</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font: 17pt ;
+background-color: rgb(255, 0, 0);
+color: rgb(248, 248, 255);
+border-width:0px;  
+border-style:solid;
+border-color: rgb(51, 153, 255);  
+</string>
+        </property>
+        <property name="text">
+         <string>跳过右侧螺栓</string>
         </property>
        </widget>
       </widget>

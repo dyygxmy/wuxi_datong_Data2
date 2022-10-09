@@ -23,11 +23,12 @@ void TaoTong::T_start()
 {
     k1 = 0,k2 = 0,k3 = 0,k4 = 0,k5 = 0,k6 = 0,k7 = 0,k8 = 0;
     connect(&m_timer,SIGNAL(timeout()),this,SLOT(taotong_timer()));
-    m_timer.start(100);
+    m_timer.start(1000);
 }
 
 void TaoTong::taotong_timer()
 {
+//    qDebug()<<"point[taotong_timer_0]:";
     if(battery)
     {
         QFile power("/var/power");
@@ -41,16 +42,24 @@ void TaoTong::taotong_timer()
         }
     }
    // qDebug() << "MMMMMMMMM";
- if(SYSS == "ING" && TaoTongState)
+ if(SYSS == "ING"&& TaoTongState)
  {
     QFile taotong1("/sys/class/gpio/gpio162/value");
     QFile taotong2("/sys/class/gpio/gpio160/value");
     QFile taotong3("/sys/class/gpio/gpio165/value");
     QFile taotong4("/sys/class/gpio/gpio164/value");
+
+#if 0
     QFile taotong5("/sys/class/gpio/gpio159/value");
     QFile taotong6("/sys/class/gpio/gpio158/value");
     QFile taotong7("/sys/class/gpio/gpio149/value");
     QFile taotong8("/sys/class/gpio/gpio146/value");
+#else
+    QFile taotong5("/sys/class/gpio/gpio149/value");
+    QFile taotong6("/sys/class/gpio/gpio146/value");
+    QFile taotong7("/sys/class/gpio/gpio147/value");
+    QFile taotong8("/sys/class/gpio/gpio159/value");
+#endif
     taotong1.open(QIODevice::ReadOnly);
     taotong2.open(QIODevice::ReadOnly);
     taotong3.open(QIODevice::ReadOnly);
@@ -84,22 +93,20 @@ void TaoTong::taotong_timer()
     taotong6.close();
     taotong7.close();
     taotong8.close();
-//    qDebug() << "come in";
-//    qDebug() << k1 << k2 << k3 << k4 << k5 << k6 << k7 << k8 ;
-    if(k1 ==1 && k2==1 && k3 == 1 && k4==1 && k5 == 1 && k6 == 1 && k7 == 1 && k8 == 0)
-    {
-        //套筒8
-        count_num8++;
-        if(count_num8 == 3)
-        {
-//          qDebug() << "send tao tong signal 8 !!!!!!";
-            emit taotong_num(8);
-            //TaoTongState = false;
-            count_num1 = 0;
+    qDebug() << "come in"<< k5 << k6 << k7 << k8 << TaoTongState;
+//    if(k6 == 0 && k7 == 0 && k8 == 0)
+//    {
+//        //套筒8
+//        count_num8++;
+//        if(count_num8 == 3)
+//        {
+//            emit taotong_num(8);
+//            //TaoTongState = false;
+//            count_num1 = 0;
 
-        }
-    }
-    else if(k1 ==1 && k2==1 && k3 == 1 && k4==1 && k5 == 1 && k6 == 1 && k7 == 0 && k8 == 1)
+//        }
+//    }
+    if(k5 == 0 && k6 == 0 && k7 == 0)
     {
         //套筒7
         count_num7++;
@@ -111,7 +118,7 @@ void TaoTong::taotong_timer()
             count_num7 = 0;
         }
     }
-    else if(k1 ==1 && k2==1 && k3 == 1 && k4==1 && k5 == 1 && k6 == 0 && k7 == 1 && k8 == 1)
+    else if(k5 == 1 && k6 == 0 && k7 == 0)
     {
         //套筒6
         count_num6++;
@@ -123,7 +130,7 @@ void TaoTong::taotong_timer()
             count_num6 = 0;
         }
     }
-    else if(k1 ==1 && k2==1 && k3 == 1 && k4==1 && k5 == 0 && k6 == 1 && k7 == 1 && k8 == 1)
+    else if(k5 == 0 && k6 == 1 && k7 == 0)
     {
         //套筒5
         count_num5++;
@@ -135,60 +142,60 @@ void TaoTong::taotong_timer()
             count_num5 = 0;
         }
     }
-      else  if(k1 ==1 && k2==1 && k3 == 1 && k4==0 && k5 == 1 && k6 == 1 && k7 == 1 && k8 == 1)
+    else  if(k5 == 1 && k6 == 1 && k7 == 0)
+    {
+        //套筒4
+        count_num4++;
+        if(count_num4 == 3)
         {
-            //套筒4
-            count_num4++;
-            if(count_num4 == 3)
-            {
-//              qDebug() << "send tao tong signal 4 !!!!!!";
-                emit taotong_num(4);
-                //TaoTongState = false;
-                count_num4 = 0;
-            }
+            //              qDebug() << "send tao tong signal 4 !!!!!!";
+            emit taotong_num(4);
+            //TaoTongState = false;
+            count_num4 = 0;
         }
-        else if(k1 ==1 && k2==1 && k3 == 0 && k4==1 && k5 == 1 && k6 == 1 && k7 == 1 && k8 == 1)
+    }
+    else if(k5 == 0 && k6 == 0 && k7 == 1)
+    {
+        //套筒3
+        count_num3++;
+        if(count_num3 == 3)
         {
-            //套筒3
-            count_num3++;
-            if(count_num3 == 3)
-            {
-//                qDebug() << "send tao tong signal 3 !!!!!!";
-                emit taotong_num(3);
-                //TaoTongState = false;
-                count_num3 = 0;
-            }
+            //                qDebug() << "send tao tong signal 3 !!!!!!";
+            emit taotong_num(3);
+            //TaoTongState = false;
+            count_num3 = 0;
         }
-        else if(k1 ==1 && k2==0 && k3 == 1 && k4==1 && k5 == 1 && k6 == 1 && k7 == 1 && k8 == 1)
+    }
+    else if(k5 == 1 && k6 == 0 && k7 == 1)
+    {
+        //套筒2
+        count_num2++;
+        if(count_num2 == 3)
         {
-            //套筒2
-            count_num2++;
-            if(count_num2 == 3)
-            {
-//                qDebug() << "send tao tong signal 2 !!!!!!";
-                emit taotong_num(2);
-                //TaoTongState = false;
-                count_num2 = 0;
-            }
+            //                qDebug() << "send tao tong signal 2 !!!!!!";
+            emit taotong_num(2);
+            //TaoTongState = false;
+            count_num2 = 0;
         }
-        else if(k1 ==0 && k2==1 && k3 == 1 && k4==1 && k5 == 1 && k6 == 1 && k7 == 1 && k8 == 1)
+    }
+    else if(k5 == 0 && k6 == 1 && k7 == 1)
+    {
+        //套筒1
+        count_num1++;
+        if(count_num1 == 3)
         {
-            //套筒1
-            count_num1++;
-            if(count_num1 == 3)
-            {
-                 qDebug() << "send tao tong signal 1 !!!!!!";
-                 //qDebug() << TAOTONG;
-                emit taotong_num(1);
-                //TaoTongState = false;
-                 count_num1=0;
-            }
+//            qDebug() << "send tao tong signal 1 !!!!!!";
+            emit taotong_num(1);
+            //TaoTongState = false;
+            count_num1=0;
         }
-        else
-        {
-            emit taotong_num(10);
-        }
+    }
+    else
+    {
+        emit taotong_num(10);
+//        qDebug();
+    }
 }
-
+// qDebug()<<"point[taotong_timer_1]:";
 }
 

@@ -96,6 +96,8 @@ void Save::on_pushButton_clicked()
         emit sendShutDown(1);
     else if(SaveWhat == "sqlerror")
         emit sendShutDown(2);
+    else if(SaveWhat == "config_bound")
+        emit sendSaveBound(true);
 
 }
 
@@ -140,6 +142,8 @@ void Save::on_pushButton_2_clicked()
         emit sendCloseInput(false);
     else if(SaveWhat == "shutdown")
         emit sendShutDown(2);
+    else if(SaveWhat == "config_bound")
+        emit sendSaveBound(false);
     //this->close();
 }
 

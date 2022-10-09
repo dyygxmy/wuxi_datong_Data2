@@ -12,6 +12,8 @@
 #include "serialcom.h"
 #include <QFile>
 #include <QTextStream>
+#include <qextserial/qextserialport.h>
+
 class TightenThread : public QObject
 {
     Q_OBJECT
@@ -27,21 +29,24 @@ signals:
     void sendfromworkthread(QString *);
 public slots:
     void tightenStart();
-    void slot_read_com();
+    void slot_read_com3();
     void sendReadOperate();
     void readGWKResult(QString buf);
 private:
     QThread m_thread;
-    SerialCom *myCom;
-    int SerFd;
+    QextSerialPort *myCom3;
+//    SerialCom *myCom3;
+//    int SerFd;
     QString timeValue;
     QString torqueValue;
     QString angleValue;
     QString gwkStatus;
     QTimer  coms;
-    char Buf[100];
+//    char Buf[500];
     QString data_model[11];
-    char gwkResultBuf[100];
+    QString controlType;
+//    char gwkResultBuf[200];
+    QByteArray gwkResultBuf;
     int  gwkResultLen;
     int  boltOkNum;
     int  boltNokNum;
@@ -49,7 +54,10 @@ private:
     int  boltNumOk;
     int  boltNumNok;
 
-
+    QString debugBuf;
+    QString strTime;
+    QTimer  dataTimer;
+    QDateTime cur_time;
 
 };
 

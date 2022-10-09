@@ -22,6 +22,7 @@ signals:
     void sendSaveMasterSlaveState(bool);
     void sendCloseInput(bool);
     void sendShutDown(int);
+    void sendSaveBound(bool);
 
 
 private slots:

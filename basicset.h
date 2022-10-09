@@ -16,7 +16,7 @@ public:
     ~BasicSet();
 public:
 signals:
-    void sendBaseinfo(QString,QString,QString);
+    void sendBaseinfo(QString,QString,QString,QString);
     void sendbaseinfocancel();
     
 private slots:
@@ -32,7 +32,7 @@ private:
     Ui::BasicSet *ui;
 public:
     void   setchecking();
-    void   setConfigValue351(QString,QString,QString);
+    void   setConfigValue351(QString,QString,QString,QString);
     void   setSerialOrRfidMode(QString,QString);
     void   setServerValue(QString,QString,QString);
 };
